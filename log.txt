@@ -1,0 +1,27 @@
+Reading cached build data
+>> Local Products Rules ..... started
+>> Local Products Rules ..... done
+>> Building CMSSW version CMSSW_10_4_0_pre4 ----
+>> Subsystem BigProducts built
+>> Entering Package DQM/CTPPS
+>> Creating project symlinks
+>> Entering Package DataFormats/CTPPSReco
+>> Entering Package RecoCTPPS/TotemRPLocal
+>> Entering Package RecoCTPPS/Configuration
+>> Entering Package HLTrigger/special
+>> Entering Package Filter/PixelMux_Filter
+>> Entering Package Analyzer/SimpleAnalyzer
+>> Leaving Package RecoCTPPS/Configuration
+>> Package RecoCTPPS/Configuration built
+>> Leaving Package HLTrigger/special
+>> Package HLTrigger/special built
+>> Leaving Package DQM/CTPPS
+>> Package DQM/CTPPS built
+>> Leaving Package DataFormats/CTPPSReco
+>> Leaving Package RecoCTPPS/TotemRPLocal
+>> Package RecoCTPPS/TotemRPLocal built
+>> Leaving Package Filter/PixelMux_Filter
+>> Package DataFormats/CTPPSReco built
+>> Package Filter/PixelMux_Filter built
+>> Compiling edm plugin /afs/cern.ch/work/e/ebossini/Analysis/CMSSW_10_4_0_pre4/src/Analyzer/SimpleAnalyzer/plugins/DiamondTimingAnalyzer.cc 
+gmake: *** [There are compilation/build errors. Please see the detail log above.] Error 2
