@@ -196,7 +196,7 @@ process.diamondTimingAnalyzer = cms.EDAnalyzer('DiamondTimingAnalyzer',
  tagCalibrationFile = cms.string(options.calibFile),
  tagValidOOT = cms.int32(options.validOOT),
  Ntracks_Lcuts = cms.vint32([-1,1,-1,1]),
- Ntracks_Ucuts = cms.vint32([-1,3,-1,3]),
+ Ntracks_Ucuts = cms.vint32([-1,6,-1,6]),
 )
 
 #process.PixelMux_Filter = cms.EDFilter('PixelMux_Filter',
