@@ -841,6 +841,18 @@ for (const auto& LocalTrack_mapIter : DiamondDet.GetDiamondTrack_map()) // loop 
 		DiamondDet.GetTrackMuxInSector(sec_number)==1) mark_tag=true;
 	
 	std::vector<ChannelKey>  hit_selected(4);
+	 
+	int NumPlanes=0;
+	//if (DiamondDet.GetMuxInTrack(sec_number,PLANE_0_ID)>0) NumPlanes++;
+	//if (DiamondDet.GetMuxInTrack(sec_number,PLANE_1_ID)>0) NumPlanes++;
+	//if (DiamondDet.GetMuxInTrack(sec_number,PLANE_2_ID)>0) NumPlanes++;
+	//if (DiamondDet.GetMuxInTrack(sec_number,PLANE_3_ID)>0) NumPlanes++;
+	//if (NumPlanes<4) continue;
+	//if (DiamondDet.GetMuxInTrack(sec_number,PLANE_0_ID)>1) continue;
+	//if (DiamondDet.GetMuxInTrack(sec_number,PLANE_1_ID)>1) continue;
+	//if (DiamondDet.GetMuxInTrack(sec_number,PLANE_2_ID)>1) continue;
+	//if (DiamondDet.GetMuxInTrack(sec_number,PLANE_3_ID)>1) continue;
+	//if (DiamondDet.GetTrackMuxInSector(sec_number)!=1) continue;
     
 	
 
@@ -890,11 +902,10 @@ for (const auto& LocalTrack_mapIter : DiamondDet.GetDiamondTrack_map()) // loop 
 		
 	}
 	
-				//std::cout << "saving timing" << std::endl;
+			
 	Tracks_time_SPC_histo_V_[ sec_number ]->Fill(Track_time_SPC);
 	Tracks_resolution_histo_V_[ sec_number ]->Fill(Track_precision_SPC);	
 	Tracks_time_RAW_histo_V_[ sec_number ]->Fill(Track_time_RAW);
-	
 				//std::cout << "timing saved" << std::endl;
 
 	if (mark_tag)	
