@@ -220,6 +220,12 @@ class DiamondTimingAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResour
 	  std::map<std::pair<int,int>, TGraph*>  ImprouvedRes_L2_graph_map_;
 	  std::map<std::pair<int,int>, TGraph*>  ImprouvedRes_L2_3p_graph_map_;
 	  
+	  
+	  std::vector<TH2F*>  Tracks_time_SPC_BX_Histo_V_;  //<sector>
+	  std::vector<TH2F*>  Tracks_time_SPC_LS_Histo_V_;  //<sector>	  
+      std::map<int,TProfile*> Tracks_time_SPC_BX_Profile_map_;
+      std::map<int,TProfile*> Tracks_time_SPC_LS_Profile_map_;
+	  
 	  TTree  *TCalibration_;
 	  int cal_channel_;
 	  int cal_plane_;
@@ -271,10 +277,12 @@ DiamondTimingAnalyzer:: DiamondTimingAnalyzer(const edm::ParameterSet& iConfig)
  Tracks_time_RAW_histo_V_(2),
  Tracks_time_SPC_histo_V_(2),
  Tracks_resolution_histo_V_(2),
+ Tracks_time_SPC_BX_Histo_V_(2),
+ Tracks_time_SPC_LS_Histo_V_(2), 
  DiamondDet(iConfig,tokenRecHit_,tokenLocalTrack_),
 valid_OOT_ (iConfig.getParameter< int >( "tagValidOOT" ))
 {
-  usesResource("TFileService");
+  usesResource("TFileService"); 
   
 
 	Ntracks_cuts_map_[std::make_pair(SECTOR_45_ID,STATION_210_M_ID)] = std::make_pair(iConfig.getParameter< std::vector <int> >( "Ntracks_Lcuts" )[0],
@@ -556,17 +564,17 @@ if (!(Sector_TBA[0] || Sector_TBA[1])) return;
 			TOTvsPT_Histo_map_[recHitKey]-> Fill(DiamondDet.GetToT(detId.arm(), detId.plane(),detId.channel()), Pixel_Mux_map_[std::make_pair(detId.arm(),STATION_220_M_ID)]);
 			TOTvsTT_Histo_map_[recHitKey]-> Fill(DiamondDet.GetToT(detId.arm(), detId.plane(),detId.channel()),  DiamondDet.GetTrackMuxInSector(detId.arm()));
 			
-			// comment following 2 lines if running on 2017 data samples
-			TOTvsT_Histo_map_[recHitKey]-> Fill(DiamondDet.GetToT(detId.arm(), detId.plane(),detId.channel()), DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()));
-			ValidT_Histo_map_[recHitKey]-> Fill( DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()) );
+			//// comment following 2 lines if running on 2017 data samples
+			//TOTvsT_Histo_map_[recHitKey]-> Fill(DiamondDet.GetToT(detId.arm(), detId.plane(),detId.channel()), DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()));
+			//ValidT_Histo_map_[recHitKey]-> Fill( DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()) );
 
 			////////////////////////////////////////////////////
 			// Run dependent code 2017 start
 			////////////////////////////////////////////////////
 			
-			// standard runs
-			//TOTvsT_Histo_map_[recHitKey]-> Fill(DiamondDet.GetToT(detId.arm(), detId.plane(),detId.channel()), DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()));
-			//ValidT_Histo_map_[recHitKey]-> Fill( DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()) );
+			 standard runs
+			TOTvsT_Histo_map_[recHitKey]-> Fill(DiamondDet.GetToT(detId.arm(), detId.plane(),detId.channel()), DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()));
+			ValidT_Histo_map_[recHitKey]-> Fill( DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()) );
 			
 			// 5 windows std clock
 			//if (detId.arm()==0 && (detId.plane()==0 || (detId.plane()==1 && detId.channel()>6)))
@@ -598,6 +606,19 @@ if (!(Sector_TBA[0] || Sector_TBA[1])) return;
 			//	TOTvsT_Histo_map_[recHitKey]-> Fill(DiamondDet.GetToT(detId.arm(), detId.plane(),detId.channel()), DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()));
 			//}
 			
+			 //300088
+			//if (detId.arm()==0 && (detId.plane()==0 || detId.plane()==2 || detId.channel()>6))
+			//{
+			//	double patched_T = DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()) - 12.5;
+			//	if (patched_T < 0.0) patched_T+=25.0;
+			//	TOTvsT_Histo_map_[recHitKey]-> Fill(DiamondDet.GetToT(detId.arm(), detId.plane(),detId.channel()), patched_T);
+			//	ValidT_Histo_map_[recHitKey]-> Fill( patched_T );
+			//}
+			//else
+			//{
+			//	ValidT_Histo_map_[recHitKey]-> Fill( DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()) );
+			//	TOTvsT_Histo_map_[recHitKey]-> Fill(DiamondDet.GetToT(detId.arm(), detId.plane(),detId.channel()), DiamondDet.GetTime(detId.arm(), detId.plane(),detId.channel()));
+			//}
 			
 			
 			//// 300155
@@ -906,7 +927,10 @@ for (const auto& LocalTrack_mapIter : DiamondDet.GetDiamondTrack_map()) // loop 
 	Tracks_time_SPC_histo_V_[ sec_number ]->Fill(Track_time_SPC);
 	Tracks_resolution_histo_V_[ sec_number ]->Fill(Track_precision_SPC);	
 	Tracks_time_RAW_histo_V_[ sec_number ]->Fill(Track_time_RAW);
-				//std::cout << "timing saved" << std::endl;
+	
+	
+	Tracks_time_SPC_BX_Histo_V_[ sec_number ]->Fill(iEvent.bunchCrossing(), Track_time_SPC );  //<sector>
+	Tracks_time_SPC_LS_Histo_V_[ sec_number ]->Fill(iEvent.luminosityBlock(), Track_time_SPC );  //<sector>	  
 
 	if (mark_tag)	
 	{
@@ -1330,7 +1354,14 @@ DiamondTimingAnalyzer::beginJob()
 	    name="Timing track time SPC sector "+std::to_string(sec_number);
 		Tracks_time_SPC_histo_V_[ sec_number ] = dir_cyl_V[sec_number].make<TH1F>(name.c_str(), name.c_str(), 1200, -60, 60);			
 	    name="Timing track resolution sector "+std::to_string(sec_number);
-		Tracks_resolution_histo_V_[ sec_number ] = dir_cyl_V[sec_number].make<TH1F>(name.c_str(), name.c_str(), 1000, 0, 1);	
+		Tracks_resolution_histo_V_[ sec_number ] = dir_cyl_V[sec_number].make<TH1F>(name.c_str(), name.c_str(), 1000, 0, 1);
+
+		name="Timing track time SPC Vs BX sector "+std::to_string(sec_number);
+		Tracks_time_SPC_BX_Histo_V_[ sec_number ] = dir_cyl_V[sec_number].make<TH2F>(name.c_str(), name.c_str(), 4000, 0, 4000, 500, -5 , 5 );
+		
+		name="Timing track time SPC Vs LS sector "+std::to_string(sec_number);
+		Tracks_time_SPC_LS_Histo_V_[ sec_number ] = dir_cyl_V[sec_number].make<TH2F>(name.c_str(), name.c_str(), 4000, 0, 4000, 500, -5 , 5 );
+					
 		
 		
 	  				
@@ -1682,6 +1713,19 @@ DiamondTimingAnalyzer::endJob()
 			//	cal_par_3_  = myfermi-> GetParameter(3);
 			//}
 			
+			// 300088		
+			if (Histo_handle.first.sector==0 && (Histo_handle.first.plane==0 || Histo_handle.first.plane==2 || Histo_handle.first.channel>6))
+			{
+				if (cal_par_3_ < 12.5)
+					cal_par_3_  = myfermi-> GetParameter(3)+12.5;
+				else
+					cal_par_3_  = myfermi-> GetParameter(3)-12.5;
+			}
+			else
+			{
+				cal_par_3_  = myfermi-> GetParameter(3);
+			}
+			
 			
 			//// 300155
 			//if (Histo_handle.first.sector==1 && ((Histo_handle.first.plane==1 &&  Histo_handle.first.channel==6) || (Histo_handle.first.plane==3 && Histo_handle.first.channel<7)))
@@ -1723,6 +1767,17 @@ DiamondTimingAnalyzer::endJob()
 			
 		}
 	}
+
+	//////////////////////////////////////////////////
+    // profiles for SPC average trackTime Vs BX/LS	
+    //////////////////////////////////////////////////
+	for (int sec_id=0; sec_id < MAX_SECTOR_NUMBER; sec_id ++)
+	{
+		Tracks_time_SPC_BX_Profile_map_[ sec_id ] = dir_cyl_V[ sec_id ].make<TProfile>(*Tracks_time_SPC_BX_Histo_V_[ sec_id ]->ProfileX("_BX_pfx",1,-1));
+		Tracks_time_SPC_LS_Profile_map_[ sec_id ] = dir_cyl_V[ sec_id ].make<TProfile>(*Tracks_time_SPC_LS_Histo_V_[ sec_id ]->ProfileX("_LS_pfx",1,-1));
+		
+	}
+
 	
 }
 
