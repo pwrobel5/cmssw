@@ -44,14 +44,17 @@ process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        "/store/data/Run2018D/ZeroBias/AOD/PromptReco-v2/000/322/332/00000/00302FB3-1CB4-E811-96B2-FA163EC9F152.root",
+        "/store/data/Run2018D/ZeroBias/AOD/12Nov2019_UL2018_rsb-v1/120000/27E825BA-972B-E04C-86BC-F38C53041087.root",
     ))
 
 process.LightAnalyzer = cms.EDAnalyzer("LightAnalyzer",
     tagRecHit = cms.InputTag("ctppsDiamondRecHits"),
     tagLocalTrack = cms.InputTag("ctppsDiamondLocalTracks"),
+    tagPixelLocalTrack = cms.InputTag("ctppsPixelLocalTracks"),
     tagCalibrationFile = cms.string(options.calibFile),
-    tagValidOOT = cms.int32(options.validOOT)
+    tagValidOOT = cms.int32(options.validOOT),
+    Ntracks_Lcuts = cms.vint32([-1,1,-1,1]),
+    Ntracks_Ucuts = cms.vint32([-1,6,-1,6])
 )
 process.Tracer = cms.Service("Tracer")
 

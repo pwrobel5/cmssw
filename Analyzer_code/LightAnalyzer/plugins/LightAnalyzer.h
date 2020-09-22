@@ -22,6 +22,9 @@
 // system include files
 #include <memory>
 #include <iostream>
+#include <vector>
+#include <map>
+#include <algorithm>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -39,19 +42,15 @@
 
 #include "DataFormats/CTPPSReco/interface/CTPPSDiamondRecHit.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSDiamondLocalTrack.h"
+#include "DataFormats/CTPPSReco/interface/CTPPSPixelLocalTrack.h"
 
 #include "TH2F.h"
 
 #include "DiamondDetectorClass.h"
 
 //
-// constants, enums and typedefs
+// enums and typedefs
 //
-
-static const int CHANNELS_NUMBER = 12;
-static const int PLANES_NUMBER = 4;
-static const int SECTORS_NUMBER = 2;
-edm::Service<TFileService> fs;
 
 enum SectorID {
     SECTOR_45,
@@ -90,14 +89,41 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
         virtual void endJob() override;
 
+        void fillPixelMux(const edm::Event& iEvent);
+        std::vector<bool> getSectorsToAnalyze();
+        void fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool>& sectorsToAnalyze);
+        bool isRecHitValid(const CTPPSDiamondRecHit& recHit, const ChannelKey& recHitKey);
+
+        std::string makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex);
+        std::string makeSectorHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex);
+
+        // constants
+        static const int CHANNELS_NUMBER = 12;
+        static const int PLANES_NUMBER = 4;
+        static const int SECTORS_NUMBER = 2;
+        edm::Service<TFileService> fs;
+
         // ----------member data ---------------------------
 
         // objects to retrieve
-        edm::EDGetTokenT< edm::DetSetVector<CTPPSDiamondRecHit> > tokenRecHit;
-        edm::EDGetTokenT< edm::DetSetVector<CTPPSDiamondLocalTrack> > tokenLocalTrack;
+        edm::EDGetTokenT< edm::DetSetVector<CTPPSDiamondRecHit>> tokenRecHit;
+        edm::EDGetTokenT< edm::DetSetVector<CTPPSDiamondLocalTrack>> tokenLocalTrack;
+        edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelLocalTrack>> tokenPixelLocalTrack;
 
         // external
-        DiamondDetectorClass DiamondDetector;
+        DiamondDetectorClass diamondDetector;
+        int validOOT;
+
+        // selection parameters
+        std::map<std::pair<int, int>, std::pair<int, int>> NTracksCuts; // (sector, station), (Lcut, Ucut)
+
+        std::map<std::pair<int, int>, int> PixelMux; // arm, station
+
+        // directories
+        std::vector<TFileDirectory> sectorDirectories;
+
+        // histograms
+        std::vector<TH2F*> TOTvsLSSectorHistograms;
 };
 
 //

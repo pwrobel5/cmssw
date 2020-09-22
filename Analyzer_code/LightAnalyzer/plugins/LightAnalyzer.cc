@@ -18,6 +18,7 @@
 
 // user include files
 #include "LightAnalyzer.h"
+#include "HistogramConstants.h"
 
 //
 // constructors and destructor
@@ -25,8 +26,22 @@
 LightAnalyzer::LightAnalyzer(const edm::ParameterSet& iConfig):
     tokenRecHit(consumes<edm::DetSetVector<CTPPSDiamondRecHit>>(iConfig.getParameter<edm::InputTag>("tagRecHit"))),
     tokenLocalTrack(consumes<edm::DetSetVector<CTPPSDiamondLocalTrack>>(iConfig.getParameter<edm::InputTag>("tagLocalTrack"))),
-    DiamondDetector(iConfig, tokenRecHit, tokenLocalTrack)
+    tokenPixelLocalTrack(consumes< edm::DetSetVector<CTPPSPixelLocalTrack>>(iConfig.getParameter<edm::InputTag>("tagPixelLocalTrack"))),
+    diamondDetector(iConfig, tokenRecHit, tokenLocalTrack),
+    validOOT(iConfig.getParameter<int>("tagValidOOT")),
+    sectorDirectories(SECTORS_NUMBER),
+    TOTvsLSSectorHistograms(SECTORS_NUMBER)
 {
+    usesResource("TFileService");
+
+    NTracksCuts[std::make_pair(SECTOR_45, STATION_210_M)] = std::make_pair(iConfig.getParameter<std::vector<int>>("Ntracks_Lcuts")[0],
+																					iConfig.getParameter<std::vector<int>>("Ntracks_Ucuts")[0]);
+	NTracksCuts[std::make_pair(SECTOR_45, STATION_220_M)] = std::make_pair(iConfig.getParameter<std::vector<int>>("Ntracks_Lcuts")[1],
+																					iConfig.getParameter<std::vector<int>>("Ntracks_Ucuts")[1]);
+	NTracksCuts[std::make_pair(SECTOR_56, STATION_210_M)] = std::make_pair(iConfig.getParameter<std::vector<int>>("Ntracks_Lcuts")[2],
+																					iConfig.getParameter< std::vector <int> >( "Ntracks_Ucuts" )[2]);
+	NTracksCuts[std::make_pair(SECTOR_56, STATION_220_M)] = std::make_pair(iConfig.getParameter<std::vector<int>>("Ntracks_Lcuts")[3],
+																					iConfig.getParameter<std::vector<int>>("Ntracks_Ucuts")[3]);
 }
 
 
@@ -42,27 +57,98 @@ void LightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 {
     using namespace edm;
 
-    edm::Handle<edm::DetSetVector<CTPPSDiamondRecHit>> timingRecHit;
-    iEvent.getByToken(tokenRecHit, timingRecHit);
+    fillPixelMux(iEvent);
 
-    DiamondDetector.ExtractData(iEvent);
+    std::vector<bool> sectorsToAnalyze = getSectorsToAnalyze();
+    if (std::find(sectorsToAnalyze.begin(), sectorsToAnalyze.end(), true) == sectorsToAnalyze.end())
+        return;
 
-    for (const auto& recHits : *timingRecHit) {
-       const CTPPSDiamondDetId detId(recHits.detId());
-       const ChannelKey recHitKey(detId.arm(), detId.plane(), detId.channel());
+    diamondDetector.ExtractData(iEvent);
 
-       for (const auto& recHit : recHits) {
-            if (DiamondDetector.PadActive(detId.arm(), detId.plane(), detId.channel())) { // T and ToT are present
-                std::cout << "LS: " << iEvent.luminosityBlock() << ", ToT: " << DiamondDetector.GetToT(detId.arm(), detId.plane(), detId.channel()) << std::endl;
-            }
-       }
+    fillTOTvsLS(iEvent, sectorsToAnalyze);    
+}
+
+void LightAnalyzer::fillPixelMux(const edm::Event& iEvent) 
+{
+    edm::Handle<edm::DetSetVector<CTPPSPixelLocalTrack>> pixelLocalTrack;
+    iEvent.getByToken(tokenPixelLocalTrack, pixelLocalTrack);
+
+    PixelMux.clear();
+
+    for (const auto& RPTracks : *pixelLocalTrack) {
+        const CTPPSDetId detId(RPTracks.detId());
+
+	  	for (const auto& track : RPTracks) 
+	  	{
+			if (!track.isValid()) continue; // validity of data is saved in track and provided by the data file			
+			PixelMux[std::make_pair(detId.arm(), detId.station())]++;
+      	}	 
     }
 }
 
+std::vector<bool> LightAnalyzer::getSectorsToAnalyze()
+{
+    std::vector<bool> sectorsToAnalyze(SECTORS_NUMBER, true);    
+
+    for (const auto& NtracksCutsElement :  NTracksCuts)
+	{
+		if ((NtracksCutsElement.second.first < 0) || (NtracksCutsElement.second.second < 0)) continue; // don't care condition, values < 0 indicate that nothing happened
+		if ((PixelMux[NtracksCutsElement.first] < NtracksCutsElement.second.first) ||
+			(PixelMux[NtracksCutsElement.first] > NtracksCutsElement.second.second))  // condition violated
+		{
+			sectorsToAnalyze[NtracksCutsElement.first.first] = false;
+		}		
+	}
+
+    return sectorsToAnalyze;
+}
+
+void LightAnalyzer::fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool>& sectorsToAnalyze)
+{
+    edm::Handle<edm::DetSetVector<CTPPSDiamondRecHit>> timingRecHit;    
+    iEvent.getByToken(tokenRecHit, timingRecHit);
+
+    for (const auto& recHits : *timingRecHit) {
+        const CTPPSDiamondDetId detId(recHits.detId());
+        const ChannelKey recHitKey(detId.arm(), detId.plane(), detId.channel());
+
+        if (sectorsToAnalyze[detId.arm()]) {
+            for (const auto& recHit : recHits) {
+                if (isRecHitValid(recHit, recHitKey) && diamondDetector.PadActive(detId.arm(), detId.plane(), detId.channel())) {
+                    TOTvsLSSectorHistograms[recHitKey.sector]->Fill(iEvent.luminosityBlock(), diamondDetector.GetToT(detId.arm(), detId.plane(), detId.channel()));
+                }
+            }
+        }
+    }
+}
+
+bool LightAnalyzer::isRecHitValid(const CTPPSDiamondRecHit& recHit, const ChannelKey& recHitKey)
+{
+    return ((recHit.getOOTIndex() == (int)((diamondDetector.GetSPCMap())[recHitKey].offset / 25)) || validOOT == -1) && !recHit.getMultipleHits();
+}
 
 // ------------ method called once each job just before starting event loop  ------------
 void LightAnalyzer::beginJob()
 {
+    sectorDirectories[SECTOR_45] = fs->mkdir(SECTOR_45_HISTOGRAM_PATH);
+    sectorDirectories[SECTOR_56] = fs->mkdir(SECTOR_56_HISTOGRAM_PATH);
+
+    for (int sectorNumber = 0; sectorNumber < SECTORS_NUMBER; sectorNumber++) {
+        TOTvsLSSectorHistograms[sectorNumber] = sectorDirectories[sectorNumber].make<TH2F>(
+            makeSectorHistogramTitle(TOT_VS_LS_HISTOGRAM_NAME, sectorNumber).c_str(),
+            makeSectorHistogramLegend(TOT_VS_LS_HISTOGRAM_NAME, TOT_VS_LS_HISTOGRAM_LEGEND_SUFFIX, sectorNumber).c_str(),
+            LS_BINS, LS_MIN, LS_MAX, TOT_BINS, TOT_MIN, TOT_MAX);
+    }
+}
+
+std::string LightAnalyzer::makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex)
+{
+    return titlePrefix + std::to_string(sectorIndex);
+}
+
+std::string LightAnalyzer::makeSectorHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex)
+{
+    return legendPrefix + std::to_string(sectorIndex) + legendSuffix;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
