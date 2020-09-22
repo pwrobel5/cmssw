@@ -89,6 +89,7 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
         virtual void endJob() override;
 
+        void readNTracksCuts(const edm::ParameterSet& iConfig);
         void fillPixelMux(const edm::Event& iEvent);
         std::vector<bool> getSectorsToAnalyze();
         void fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool>& sectorsToAnalyze);

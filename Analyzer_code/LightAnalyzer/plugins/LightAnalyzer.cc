@@ -33,7 +33,11 @@ LightAnalyzer::LightAnalyzer(const edm::ParameterSet& iConfig):
     TOTvsLSSectorHistograms(SECTORS_NUMBER)
 {
     usesResource("TFileService");
+    readNTracksCuts(iConfig);
+}
 
+void LightAnalyzer::readNTracksCuts(const edm::ParameterSet& iConfig)
+{
     NTracksCuts[std::make_pair(SECTOR_45, STATION_210_M)] = std::make_pair(iConfig.getParameter<std::vector<int>>("Ntracks_Lcuts")[0],
 																					iConfig.getParameter<std::vector<int>>("Ntracks_Ucuts")[0]);
 	NTracksCuts[std::make_pair(SECTOR_45, STATION_220_M)] = std::make_pair(iConfig.getParameter<std::vector<int>>("Ntracks_Lcuts")[1],
