@@ -45,6 +45,7 @@
 #include "DataFormats/CTPPSReco/interface/CTPPSPixelLocalTrack.h"
 
 #include "TH2F.h"
+#include "TProfile.h"
 
 #include "DiamondDetectorClass.h"
 
@@ -103,6 +104,9 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::string makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex);
         std::string makeSectorHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex);
 
+        void makeSectorProfiles();
+        void makeChannelProfiles();
+
         // constants
         static const int CHANNELS_NUMBER = 12;
         static const int PLANES_NUMBER = 4;
@@ -133,6 +137,11 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::map<ChannelKey, TH2F*> TOTvsLSChannelHistograms;
         
         std::vector<TH2F*> TOTvsLSSectorHistograms;
+
+        // profiles
+        std::map<int, TProfile*> TOTvsLSSectorProfiles;
+        
+        std::map<ChannelKey, TProfile*> TOTvsLSChannelProfiles;
 };
 
 //

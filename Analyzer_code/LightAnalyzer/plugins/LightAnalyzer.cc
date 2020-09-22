@@ -196,6 +196,30 @@ std::string LightAnalyzer::makeSectorHistogramLegend(const std::string& legendPr
 // ------------ method called once each job just after ending the event loop  ------------
 void LightAnalyzer::endJob()
 {
+    makeSectorProfiles();
+    makeChannelProfiles();
+}
+
+void LightAnalyzer::makeSectorProfiles()
+{
+    for (int sectorNumber = 0; sectorNumber < SECTORS_NUMBER; sectorNumber++) {
+        TOTvsLSSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TOTvsLSSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
+    }
+}
+
+void LightAnalyzer::makeChannelProfiles()
+{
+    for (int sectorNumber = 0; sectorNumber < SECTORS_NUMBER; sectorNumber++) {
+        for (int planeNumber = 0; planeNumber < PLANES_NUMBER; planeNumber++) {
+            for (int channelNumber = 0; channelNumber < CHANNELS_NUMBER; channelNumber++) {
+                ChannelKey channelKey(sectorNumber, planeNumber, channelNumber);
+
+                if (channelDirectories.find(channelKey) != channelDirectories.end()) {
+                    TOTvsLSChannelProfiles[channelKey] = channelDirectories[channelKey].make<TProfile>(*TOTvsLSChannelHistograms[channelKey]->ProfileX("_pfx", 1, -1));
+                }
+            }
+        }
+    }
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
