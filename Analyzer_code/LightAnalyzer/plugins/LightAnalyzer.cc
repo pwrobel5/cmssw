@@ -116,14 +116,52 @@ void LightAnalyzer::fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool
         const CTPPSDiamondDetId detId(recHits.detId());
         const ChannelKey recHitKey(detId.arm(), detId.plane(), detId.channel());
 
+        if(channelDirectories.find(recHitKey) == channelDirectories.end() && recHits.size() > 0)
+            initializeChannelHistograms(detId);
+
         if (sectorsToAnalyze[detId.arm()]) {
             for (const auto& recHit : recHits) {
                 if (isRecHitValid(recHit, recHitKey) && diamondDetector.PadActive(detId.arm(), detId.plane(), detId.channel())) {
-                    TOTvsLSSectorHistograms[recHitKey.sector]->Fill(iEvent.luminosityBlock(), diamondDetector.GetToT(detId.arm(), detId.plane(), detId.channel()));
+                    int LS = iEvent.luminosityBlock();
+                    double ToT = diamondDetector.GetToT(detId.arm(), detId.plane(), detId.channel());
+
+                    TOTvsLSSectorHistograms[recHitKey.sector]->Fill(LS, ToT);
+                    TOTvsLSChannelHistograms[recHitKey]->Fill(LS, ToT);
                 }
             }
         }
     }
+}
+
+void LightAnalyzer::initializeChannelHistograms(const CTPPSDiamondDetId& detId)
+{
+    int sectorIndex = detId.arm();
+    int planeIndex = detId.plane();
+    int channelIndex = detId.channel();
+
+    ChannelKey recHitKey(sectorIndex, planeIndex, channelIndex);
+    std::string directoryName = makeChannelDirectoryName(planeIndex, channelIndex);
+
+    channelDirectories[recHitKey] = sectorDirectories[sectorIndex].mkdir(directoryName);
+    TOTvsLSChannelHistograms[recHitKey] = channelDirectories[recHitKey].make<TH2F>(
+        makeChannelHistogramTitle(TOT_VS_LS_HISTOGRAM_NAME, planeIndex, channelIndex).c_str(),
+        makeChannelHistogramLegend(TOT_VS_LS_HISTOGRAM_NAME, TOT_VS_LS_HISTOGRAM_LEGEND_SUFFIX, planeIndex, channelIndex).c_str(),
+        LS_BINS, LS_MIN, LS_MAX, TOT_BINS, TOT_MIN, TOT_MAX);
+}
+
+std::string LightAnalyzer::makeChannelDirectoryName(int planeIndex, int channelIndex)
+{
+    return "plane " + std::to_string(planeIndex) + "/channel " + std::to_string(channelIndex);
+}
+
+std::string LightAnalyzer::makeChannelHistogramTitle(const std::string& titlePrefix, int planeIndex, int channelIndex)
+{
+    return titlePrefix + " plane " + std::to_string(planeIndex) + " channel " + std::to_string(channelIndex);
+}
+
+std::string LightAnalyzer::makeChannelHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int planeIndex, int channelIndex)
+{
+    return makeChannelHistogramTitle(legendPrefix, planeIndex, channelIndex) + legendSuffix;
 }
 
 bool LightAnalyzer::isRecHitValid(const CTPPSDiamondRecHit& recHit, const ChannelKey& recHitKey)
@@ -147,12 +185,12 @@ void LightAnalyzer::beginJob()
 
 std::string LightAnalyzer::makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex)
 {
-    return titlePrefix + std::to_string(sectorIndex);
+    return titlePrefix + " sector " + std::to_string(sectorIndex);
 }
 
 std::string LightAnalyzer::makeSectorHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex)
 {
-    return legendPrefix + std::to_string(sectorIndex) + legendSuffix;
+    return makeSectorHistogramTitle(legendPrefix, sectorIndex) + legendSuffix;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

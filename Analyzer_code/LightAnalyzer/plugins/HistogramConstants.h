@@ -6,7 +6,7 @@
 const char* SECTOR_45_HISTOGRAM_PATH = "sector_45";
 const char* SECTOR_56_HISTOGRAM_PATH = "sector_56";
 
-const std::string TOT_VS_LS_HISTOGRAM_NAME = "ToT vs LS sector ";
+const std::string TOT_VS_LS_HISTOGRAM_NAME = "ToT vs LS";
 const std::string TOT_VS_LS_HISTOGRAM_LEGEND_SUFFIX = ";LS;ToT [ns]";
 
 const int LS_BINS = 4000;

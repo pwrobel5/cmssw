@@ -90,11 +90,16 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         virtual void endJob() override;
 
         void readNTracksCuts(const edm::ParameterSet& iConfig);
+
         void fillPixelMux(const edm::Event& iEvent);
         std::vector<bool> getSectorsToAnalyze();
         void fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool>& sectorsToAnalyze);
+        void initializeChannelHistograms(const CTPPSDiamondDetId& detId);
+        std::string makeChannelDirectoryName(int planeIndex, int channelIndex);
         bool isRecHitValid(const CTPPSDiamondRecHit& recHit, const ChannelKey& recHitKey);
 
+        std::string makeChannelHistogramTitle(const std::string& titlePrefix, int planeIndex, int channelIndex);
+        std::string makeChannelHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int planeIndex, int channelIndex);
         std::string makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex);
         std::string makeSectorHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex);
 
@@ -122,8 +127,11 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
         // directories
         std::vector<TFileDirectory> sectorDirectories;
+        std::map<ChannelKey, TFileDirectory> channelDirectories;
 
         // histograms
+        std::map<ChannelKey, TH2F*> TOTvsLSChannelHistograms;
+        
         std::vector<TH2F*> TOTvsLSSectorHistograms;
 };
 

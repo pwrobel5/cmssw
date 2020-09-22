@@ -56,7 +56,7 @@ process.LightAnalyzer = cms.EDAnalyzer("LightAnalyzer",
     Ntracks_Lcuts = cms.vint32([-1,1,-1,1]),
     Ntracks_Ucuts = cms.vint32([-1,6,-1,6])
 )
-process.Tracer = cms.Service("Tracer")
+#process.Tracer = cms.Service("Tracer")
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 
