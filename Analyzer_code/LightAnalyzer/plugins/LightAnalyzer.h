@@ -143,16 +143,19 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::map<ChannelKey, TH2F*> TOTvsLSChannelHistograms;
         
         std::vector<TH2F*> TOTvsLSSectorHistograms;
-        std::vector<TH2F*> TrackTimeSectorHistograms;
+        std::vector<TH2F*> TrackTimevsLSSectorHistograms;
+        std::vector<TH2F*> TrackTimevsBXSectorHistograms;
 
         // profiles        
         std::map<ChannelKey, TProfile*> TOTvsLSChannelProfiles;
 
         std::map<int, TProfile*> TOTvsLSSectorProfiles;
-        std::map<int, TProfile*> TrackTimeSectorProfiles;
+        std::map<int, TProfile*> TrackTimevsLSSectorProfiles;
+        std::map<int, TProfile*> TrackTimevsBXSectorProfiles;
 
         // values constant for given event
         int lumiSection;
+        int bunchCrossing;
 };
 
 //

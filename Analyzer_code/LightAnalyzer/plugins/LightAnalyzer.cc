@@ -31,7 +31,8 @@ LightAnalyzer::LightAnalyzer(const edm::ParameterSet& iConfig):
     validOOT(iConfig.getParameter<int>("tagValidOOT")),
     sectorDirectories(SECTORS_NUMBER),
     TOTvsLSSectorHistograms(SECTORS_NUMBER),
-    TrackTimeSectorHistograms(SECTORS_NUMBER)
+    TrackTimevsLSSectorHistograms(SECTORS_NUMBER),
+    TrackTimevsBXSectorHistograms(SECTORS_NUMBER)
 {
     usesResource("TFileService");
     readNTracksCuts(iConfig);
@@ -70,6 +71,7 @@ void LightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
     diamondDetector.ExtractData(iEvent);
     lumiSection = iEvent.luminosityBlock();
+    bunchCrossing = iEvent.bunchCrossing();
 
     fillTOTvsLS(iEvent, sectorsToAnalyze);
     performTimingAnalysis(sectorsToAnalyze);
@@ -196,7 +198,8 @@ void LightAnalyzer::performTimingAnalysis(const std::vector<bool>& sectorsToAnal
                 }	
             }
 
-            TrackTimeSectorHistograms[sectorNumber]->Fill(lumiSection, trackTime);
+            TrackTimevsLSSectorHistograms[sectorNumber]->Fill(lumiSection, trackTime);
+            TrackTimevsBXSectorHistograms[sectorNumber]->Fill(bunchCrossing, trackTime);
         }
     }
 }
@@ -228,10 +231,16 @@ void LightAnalyzer::beginJob()
             makeSectorHistogramLegend(TOT_VS_LS_HISTOGRAM_NAME, TOT_VS_LS_HISTOGRAM_LEGEND_SUFFIX, sectorNumber).c_str(),
             LS_BINS, LS_MIN, LS_MAX, TOT_BINS, TOT_MIN, TOT_MAX);
         
-        TrackTimeSectorHistograms[sectorNumber] = sectorDirectories[sectorNumber].make<TH2F>(
+        TrackTimevsLSSectorHistograms[sectorNumber] = sectorDirectories[sectorNumber].make<TH2F>(
             makeSectorHistogramTitle(TRACK_TIME_VS_LS_HISTOGRAM_NAME, sectorNumber).c_str(),
             makeSectorHistogramLegend(TRACK_TIME_VS_LS_HISTOGRAM_NAME, TRACK_TIME_VS_LS_HISTOGRAM_LEGEND_SUFFIX, sectorNumber).c_str(),
             LS_BINS, LS_MIN, LS_MAX, TRACK_TIME_BINS, TRACK_TIME_MIN, TRACK_TIME_MAX
+        );
+
+        TrackTimevsBXSectorHistograms[sectorNumber] = sectorDirectories[sectorNumber].make<TH2F>(
+            makeSectorHistogramTitle(TRACK_TIME_VS_BX_HISTOGRAM_NAME, sectorNumber).c_str(),
+            makeSectorHistogramLegend(TRACK_TIME_VS_BX_HISTOGRAM_NAME, TRACK_TIME_VS_BX_HISTOGRAM_LEGEND_SUFFIX, sectorNumber).c_str(),
+            BX_BINS, BX_MIN, BX_MAX, TRACK_TIME_BINS, TRACK_TIME_MIN, TRACK_TIME_MAX
         );
     }
 }
@@ -257,7 +266,8 @@ void LightAnalyzer::makeSectorProfiles()
 {
     for (int sectorNumber = 0; sectorNumber < SECTORS_NUMBER; sectorNumber++) {
         TOTvsLSSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TOTvsLSSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
-        TrackTimeSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TrackTimeSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
+        TrackTimevsLSSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TrackTimevsLSSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
+        TrackTimevsBXSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TrackTimevsBXSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
     }
 }
 
