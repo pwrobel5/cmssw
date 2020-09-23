@@ -49,6 +49,7 @@
 #include "CondFormats/RunInfo/interface/LHCInfo.h"
 #include "CondFormats/DataRecord/interface/LHCInfoRcd.h"
 
+#include "TH1F.h"
 #include "TH2F.h"
 #include "TProfile.h"
 
@@ -160,7 +161,8 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         TH2F* AvVertexZvsXAngleHistogram;
         TH2F* XAnglevsLSHistogram;
         TH2F* AvVertexZvsLSHistogram;
-        
+
+        std::vector<TH1F*> TrackTimeSectorHistograms;        
         std::vector<TH2F*> TOTvsLSSectorHistograms;
         std::vector<TH2F*> TrackTimevsLSSectorHistograms;
         std::vector<TH2F*> TrackTimevsBXSectorHistograms;

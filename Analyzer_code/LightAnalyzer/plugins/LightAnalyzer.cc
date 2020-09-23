@@ -34,6 +34,7 @@ LightAnalyzer::LightAnalyzer(const edm::ParameterSet& iConfig):
     minBunchCrossing(iConfig.getParameter<int>("minBX")),
     maxBunchCrossing(iConfig.getParameter<int>("maxBX")),
     sectorDirectories(SECTORS_NUMBER),
+    TrackTimeSectorHistograms(SECTORS_NUMBER),
     TOTvsLSSectorHistograms(SECTORS_NUMBER),
     TrackTimevsLSSectorHistograms(SECTORS_NUMBER),
     TrackTimevsBXSectorHistograms(SECTORS_NUMBER),
@@ -240,6 +241,7 @@ void LightAnalyzer::performTimingAnalysis(const std::vector<bool>& sectorsToAnal
                 }	
             }
 
+            TrackTimeSectorHistograms[sectorNumber]->Fill(trackTime);
             TrackTimevsLSSectorHistograms[sectorNumber]->Fill(lumiSection, trackTime);
             TrackTimevsXAngleSectorHistograms[sectorNumber]->Fill(crossingAngle, trackTime);
 
@@ -311,6 +313,12 @@ void LightAnalyzer::initializeGlobalHistograms()
 void LightAnalyzer::initializeSectorHistograms()
 {
     for (int sectorNumber = 0; sectorNumber < SECTORS_NUMBER; sectorNumber++) {
+        TrackTimeSectorHistograms[sectorNumber] = sectorDirectories[sectorNumber].make<TH1F>(
+            makeSectorHistogramTitle(TRACK_TIME_HISTOGRAM_NAME, sectorNumber).c_str(),
+            makeSectorHistogramLegend(TRACK_TIME_HISTOGRAM_NAME, TRACK_TIME_HISTOGRAM_LEGEND_SUFFIX, sectorNumber).c_str(),
+            TRACK_TIME_BINS, TRACK_TIME_MIN, TRACK_TIME_MAX
+        );
+
         TOTvsLSSectorHistograms[sectorNumber] = sectorDirectories[sectorNumber].make<TH2F>(
             makeSectorHistogramTitle(TOT_VS_LS_HISTOGRAM_NAME, sectorNumber).c_str(),
             makeSectorHistogramLegend(TOT_VS_LS_HISTOGRAM_NAME, TOT_VS_LS_HISTOGRAM_LEGEND_SUFFIX, sectorNumber).c_str(),

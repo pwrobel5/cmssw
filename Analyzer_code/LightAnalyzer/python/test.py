@@ -30,11 +30,18 @@ options.register("minBX",
                 VarParsing.multiplicity.singleton,
                 VarParsing.varType.int,
                 "minimal bunch crossing value taken into histograms")
+
 options.register("maxBX",
                 4000,
                 VarParsing.multiplicity.singleton,
                 VarParsing.varType.int,
                 "maximal bunch crossing value taken into histograms")
+
+options.register("useJSONCalibration",
+                "n",
+                VarParsing.multiplicity.singleton,
+                VarParsing.varType.string,
+                "determine if it is needed to use calibration from JSON file")
                 
 options.parseArguments()
 
@@ -99,5 +106,9 @@ process.LightAnalyzer = cms.EDAnalyzer("LightAnalyzer",
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 
-process.path = cms.Path(ctppsDiamondLocalReconstruction * process.LightAnalyzer)
+if options.useJSONCalibration == "y":
+    # TODO - load calibration from JSON file to ctppsDiamondLocalReconstruction
+    process.path = cms.Path(ctppsDiamondLocalReconstruction * process.LightAnalyzer)
+else:
+    process.path = cms.Path(process.LightAnalyzer)
 process.schedule = cms.Schedule(process.path)

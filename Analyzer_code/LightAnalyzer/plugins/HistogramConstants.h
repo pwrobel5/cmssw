@@ -6,6 +6,9 @@
 const char* SECTOR_45_HISTOGRAM_PATH = "sector_45";
 const char* SECTOR_56_HISTOGRAM_PATH = "sector_56";
 
+const std::string TRACK_TIME_HISTOGRAM_NAME = "Track time distribution";
+const std::string TRACK_TIME_HISTOGRAM_LEGEND_SUFFIX = ";Track time [ns]";
+
 const std::string TOT_VS_LS_HISTOGRAM_NAME = "ToT vs Lumisection";
 const std::string TOT_VS_LS_HISTOGRAM_LEGEND_SUFFIX = ";Lumisection;ToT [ns]";
 
