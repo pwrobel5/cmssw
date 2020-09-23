@@ -18,8 +18,17 @@ const std::string TRACK_TIME_VS_BX_HISTOGRAM_LEGEND_SUFFIX = ";Bunch crossing;Tr
 const std::string TRACK_TIME_VS_XANGLE_HISTOGRAM_NAME = "Track time vs Crossing angle";
 const std::string TRACK_TIME_VS_XANGLE_HISTOGRAM_LEGEND_SUFFIX = ";Crossing angle [murad];Track time [ns]";
 
-const std::string AV_VERTEX_Z_VS_AV_TRACK_TIME_HISTOGRAM_NAME = "Average vertex z vs Average track time";
-const std::string AV_VERTEX_Z_VS_AV_TRACK_TIME_HISTOGRAM_LEGEND_SUFFIX = ";Average track time [ns];Average vertex z [cm]";
+const std::string AV_VERTEX_Z_VS_AV_TRACK_TIME_HISTOGRAM_NAME = "Average vertex z position vs Average track time";
+const std::string AV_VERTEX_Z_VS_AV_TRACK_TIME_HISTOGRAM_LEGEND_SUFFIX = ";Average track time [ns];Average vertex z position [cm]";
+
+const std::string AV_VERTEX_Z_VS_XANGLE_HISTOGRAM_NAME = "Average vertex z position vs Crossing angle";
+const std::string AV_VERTEX_Z_VS_XANGLE_HISTOGRAM_LEGEND = AV_VERTEX_Z_VS_XANGLE_HISTOGRAM_NAME + ";Crossing angle [murad];Average vertex z position [cm]";
+
+const std::string XANGLE_VS_LS_HISTOGRAM_NAME = "Crossing angle vs Lumisection";
+const std::string XANGLE_VS_LS_HISTOGRAM_LEGEND = XANGLE_VS_LS_HISTOGRAM_NAME + ";Lumisection;Crossing angle [murad]";
+
+const std::string AV_VERTEX_Z_VS_LS_HISTOGRAM_NAME = "Average vertex z position vs Lumisection";
+const std::string AV_VERTEX_Z_VS_LS_HISTOGRAM_LEGEND = AV_VERTEX_Z_VS_LS_HISTOGRAM_NAME + ";Lumisection;Average vertex z position [cm]";
 
 const int LS_BINS = 4000;
 const int LS_MIN = 0;

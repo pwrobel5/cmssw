@@ -272,9 +272,38 @@ double LightAnalyzer::getNextTrackPrecisionValue(double trackPrecision)
 // ------------ method called once each job just before starting event loop  ------------
 void LightAnalyzer::beginJob()
 {
+    globalInfoDirectory = fs->mkdir("GlobalInfo");
+
     sectorDirectories[SECTOR_45] = fs->mkdir(SECTOR_45_HISTOGRAM_PATH);
     sectorDirectories[SECTOR_56] = fs->mkdir(SECTOR_56_HISTOGRAM_PATH);
 
+    initializeGlobalHistograms();
+    initializeSectorHistograms();    
+}
+
+void LightAnalyzer::initializeGlobalHistograms()
+{
+    AvVertexZvsXAngleHistogram = globalInfoDirectory.make<TH2F>(
+        AV_VERTEX_Z_VS_XANGLE_HISTOGRAM_NAME.c_str(),
+        AV_VERTEX_Z_VS_XANGLE_HISTOGRAM_LEGEND.c_str(),
+        XANGLE_BINS, XANGLE_MIN, XANGLE_MAX, VERTEX_Z_BINS, VERTEX_Z_MIN, VERTEX_Z_MAX
+    );
+
+    XAnglevsLSHistogram = globalInfoDirectory.make<TH2F>(
+        XANGLE_VS_LS_HISTOGRAM_NAME.c_str(),
+        XANGLE_VS_LS_HISTOGRAM_LEGEND.c_str(),
+        LS_BINS, LS_MIN, LS_MAX, XANGLE_BINS, XANGLE_MIN, XANGLE_MAX
+    );
+
+    AvVertexZvsLSHistogram = globalInfoDirectory.make<TH2F>(
+        AV_VERTEX_Z_VS_LS_HISTOGRAM_NAME.c_str(),
+        AV_VERTEX_Z_VS_LS_HISTOGRAM_LEGEND.c_str(),
+        LS_BINS, LS_MIN, LS_MAX, VERTEX_Z_BINS, VERTEX_Z_MIN, VERTEX_Z_MAX
+    );
+}
+
+void LightAnalyzer::initializeSectorHistograms()
+{
     for (int sectorNumber = 0; sectorNumber < SECTORS_NUMBER; sectorNumber++) {
         TOTvsLSSectorHistograms[sectorNumber] = sectorDirectories[sectorNumber].make<TH2F>(
             makeSectorHistogramTitle(TOT_VS_LS_HISTOGRAM_NAME, sectorNumber).c_str(),
@@ -322,6 +351,7 @@ void LightAnalyzer::endJob()
 {
     calculateAverages();
     fillHistogramsWithAverages();
+    makeGlobalProfiles();
     makeSectorProfiles();
     makeChannelProfiles();
 }
@@ -354,6 +384,28 @@ void LightAnalyzer::fillHistogramsWithAverages()
 
         AvVertexZvsAvTrackTimeSectorHistograms[sectorNumber]->Fill(trackTimeAverage, vertexZAverages[entryLumiSection]);
     }
+
+    for (const auto& vertexZEntry : vertexZAverages) {
+        int entryLumiSection = vertexZEntry.first;
+        double averageVertexZ = vertexZEntry.second;
+        int entryCrossingAngle = crossingAngles[entryLumiSection];
+
+        AvVertexZvsXAngleHistogram->Fill(entryCrossingAngle, averageVertexZ);
+        AvVertexZvsLSHistogram->Fill(entryLumiSection, averageVertexZ);
+    }
+
+    for (const auto& crossingAngleEntry : crossingAngles) {
+        int entryLumiSection = crossingAngleEntry.first;
+        int entryCrossingAngle = crossingAngleEntry.second;
+
+        XAnglevsLSHistogram->Fill(entryLumiSection, entryCrossingAngle);
+    }
+}
+
+void LightAnalyzer::makeGlobalProfiles()
+{
+    AvVertexZvsXAngleProfile = globalInfoDirectory.make<TProfile>(*AvVertexZvsXAngleHistogram->ProfileX("_pfx", 1, -1));
+    AvVertexZvsLSProfile = globalInfoDirectory.make<TProfile>(*AvVertexZvsLSHistogram->ProfileX("_pfx", 1, -1));
 }
 
 void LightAnalyzer::makeSectorProfiles()

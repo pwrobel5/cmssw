@@ -110,6 +110,8 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         double getNextTrackTimeValue(double trackTime, double trackPrecision, double hitTime);
         double getNextTrackPrecisionValue(double trackPrecision);
 
+        void initializeGlobalHistograms();
+        void initializeSectorHistograms();
         std::string makeChannelHistogramTitle(const std::string& titlePrefix, int planeIndex, int channelIndex);
         std::string makeChannelHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int planeIndex, int channelIndex);
         std::string makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex);
@@ -117,6 +119,7 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
         void calculateAverages();
         void fillHistogramsWithAverages();
+        void makeGlobalProfiles();
         void makeSectorProfiles();
         void makeChannelProfiles();
 
@@ -147,11 +150,14 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::map<std::pair<int, int>, int> PixelMux; // arm, station
 
         // directories
+        TFileDirectory globalInfoDirectory;
         std::vector<TFileDirectory> sectorDirectories;
         std::map<ChannelKey, TFileDirectory> channelDirectories;
 
         // histograms
-        std::map<ChannelKey, TH2F*> TOTvsLSChannelHistograms;
+        TH2F* AvVertexZvsXAngleHistogram;
+        TH2F* XAnglevsLSHistogram;
+        TH2F* AvVertexZvsLSHistogram;
         
         std::vector<TH2F*> TOTvsLSSectorHistograms;
         std::vector<TH2F*> TrackTimevsLSSectorHistograms;
@@ -159,14 +165,19 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::vector<TH2F*> TrackTimevsXAngleSectorHistograms;
         std::vector<TH2F*> AvVertexZvsAvTrackTimeSectorHistograms;
 
-        // profiles        
-        std::map<ChannelKey, TProfile*> TOTvsLSChannelProfiles;
+        std::map<ChannelKey, TH2F*> TOTvsLSChannelHistograms;
+
+        // profiles
+        TProfile* AvVertexZvsXAngleProfile;
+        TProfile* AvVertexZvsLSProfile;        
 
         std::map<int, TProfile*> TOTvsLSSectorProfiles;
         std::map<int, TProfile*> TrackTimevsLSSectorProfiles;
         std::map<int, TProfile*> TrackTimevsBXSectorProfiles;
         std::map<int, TProfile*> TrackTimevsXAngleSectorProfiles;
         std::map<int, TProfile*> AvVertexZvsAvTrackTimeSectorProfiles;
+
+        std::map<ChannelKey, TProfile*> TOTvsLSChannelProfiles;
 
         // values constant for given event
         int lumiSection;
