@@ -30,7 +30,8 @@ LightAnalyzer::LightAnalyzer(const edm::ParameterSet& iConfig):
     diamondDetector(iConfig, tokenRecHit, tokenLocalTrack),
     validOOT(iConfig.getParameter<int>("tagValidOOT")),
     sectorDirectories(SECTORS_NUMBER),
-    TOTvsLSSectorHistograms(SECTORS_NUMBER)
+    TOTvsLSSectorHistograms(SECTORS_NUMBER),
+    TrackTimeSectorHistograms(SECTORS_NUMBER)
 {
     usesResource("TFileService");
     readNTracksCuts(iConfig);
@@ -68,8 +69,10 @@ void LightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
         return;
 
     diamondDetector.ExtractData(iEvent);
+    LS = iEvent.luminosityBlock();
 
-    fillTOTvsLS(iEvent, sectorsToAnalyze);    
+    fillTOTvsLS(iEvent, sectorsToAnalyze);
+    performTimingAnalysis(sectorsToAnalyze);
 }
 
 void LightAnalyzer::fillPixelMux(const edm::Event& iEvent) 
@@ -122,7 +125,6 @@ void LightAnalyzer::fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool
         if (sectorsToAnalyze[detId.arm()]) {
             for (const auto& recHit : recHits) {
                 if (isRecHitValid(recHit, recHitKey) && diamondDetector.PadActive(detId.arm(), detId.plane(), detId.channel())) {
-                    int LS = iEvent.luminosityBlock();
                     double ToT = diamondDetector.GetToT(detId.arm(), detId.plane(), detId.channel());
 
                     TOTvsLSSectorHistograms[recHitKey.sector]->Fill(LS, ToT);
@@ -169,6 +171,51 @@ bool LightAnalyzer::isRecHitValid(const CTPPSDiamondRecHit& recHit, const Channe
     return ((recHit.getOOTIndex() == (int)((diamondDetector.GetSPCMap())[recHitKey].offset / 25)) || validOOT == -1) && !recHit.getMultipleHits();
 }
 
+void LightAnalyzer::performTimingAnalysis(const std::vector<bool>& sectorsToAnalyze)
+{
+    auto localTrackMap = diamondDetector.GetDiamondTrack_map();
+    for (const auto& localTrack : localTrackMap) {
+        int sectorNumber = getSectorNumberFromLocalTrack(localTrack);
+		
+		if (sectorsToAnalyze[sectorNumber] && localTrack.second.size() != 0) {            
+            double trackTime = 0.0;
+            double trackPrecision = TRACK_PRECISION_START_VALUE;
+
+            std::vector<std::pair<ChannelKey, CTPPSDiamondRecHit>>::const_iterator hitIterator;
+            for (hitIterator = localTrack.second.begin(); hitIterator < localTrack.second.end(); hitIterator++) // hits in track loop localTrack.second = std::vector<std::pair<ChannelKey,CTPPSDiamondRecHit>> 
+            {
+                double hitTime = diamondDetector.GetTime((*hitIterator).first.sector, (*hitIterator).first.plane, (*hitIterator).first.channel);              
+                if (hitIterator == localTrack.second.begin())
+                {			
+                    trackTime = hitTime;
+                }
+                else
+                {
+                    trackTime = getNextTrackTimeValue(trackTime, trackPrecision, hitTime);
+                    trackPrecision = getNextTrackPrecisionValue(trackPrecision);
+                }	
+            }
+
+            TrackTimeSectorHistograms[sectorNumber]->Fill(LS, trackTime);
+        }
+    }
+}
+
+int LightAnalyzer::getSectorNumberFromLocalTrack(const std::pair<const CTPPSDiamondLocalTrack, std::vector<std::pair<ChannelKey, CTPPSDiamondRecHit>>>& localTrack)
+{
+    return localTrack.first.getZ0() > 0.0 ? SECTOR_45 : SECTOR_56;
+}
+
+double LightAnalyzer::getNextTrackTimeValue(double trackTime, double trackPrecision, double hitTime)
+{
+    return (trackTime * pow(trackPrecision, -2) + hitTime * 1.0) / (pow(trackPrecision, -2) + 1.0);
+}
+
+double LightAnalyzer::getNextTrackPrecisionValue(double trackPrecision)
+{
+    return pow((pow(trackPrecision, -2) + 1.0), -0.5);
+}
+
 // ------------ method called once each job just before starting event loop  ------------
 void LightAnalyzer::beginJob()
 {
@@ -180,6 +227,12 @@ void LightAnalyzer::beginJob()
             makeSectorHistogramTitle(TOT_VS_LS_HISTOGRAM_NAME, sectorNumber).c_str(),
             makeSectorHistogramLegend(TOT_VS_LS_HISTOGRAM_NAME, TOT_VS_LS_HISTOGRAM_LEGEND_SUFFIX, sectorNumber).c_str(),
             LS_BINS, LS_MIN, LS_MAX, TOT_BINS, TOT_MIN, TOT_MAX);
+        
+        TrackTimeSectorHistograms[sectorNumber] = sectorDirectories[sectorNumber].make<TH2F>(
+            makeSectorHistogramTitle(TRACK_TIME_VS_LS_HISTOGRAM_NAME, sectorNumber).c_str(),
+            makeSectorHistogramLegend(TRACK_TIME_VS_LS_HISTOGRAM_NAME, TRACK_TIME_VS_LS_HISTOGRAM_LEGEND_SUFFIX, sectorNumber).c_str(),
+            LS_BINS, LS_MIN, LS_MAX, TRACK_TIME_BINS, TRACK_TIME_MIN, TRACK_TIME_MAX
+        );
     }
 }
 
@@ -204,6 +257,7 @@ void LightAnalyzer::makeSectorProfiles()
 {
     for (int sectorNumber = 0; sectorNumber < SECTORS_NUMBER; sectorNumber++) {
         TOTvsLSSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TOTvsLSSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
+        TrackTimeSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TrackTimeSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
     }
 }
 

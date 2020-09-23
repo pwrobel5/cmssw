@@ -98,6 +98,10 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         void initializeChannelHistograms(const CTPPSDiamondDetId& detId);
         std::string makeChannelDirectoryName(int planeIndex, int channelIndex);
         bool isRecHitValid(const CTPPSDiamondRecHit& recHit, const ChannelKey& recHitKey);
+        void performTimingAnalysis(const std::vector<bool>& sectorsToAnalyze);
+        int getSectorNumberFromLocalTrack(const std::pair<const CTPPSDiamondLocalTrack, std::vector<std::pair<ChannelKey, CTPPSDiamondRecHit>>>& localTrack);
+        double getNextTrackTimeValue(double trackTime, double trackPrecision, double hitTime);
+        double getNextTrackPrecisionValue(double trackPrecision);
 
         std::string makeChannelHistogramTitle(const std::string& titlePrefix, int planeIndex, int channelIndex);
         std::string makeChannelHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int planeIndex, int channelIndex);
@@ -112,6 +116,8 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         static const int PLANES_NUMBER = 4;
         static const int SECTORS_NUMBER = 2;
         edm::Service<TFileService> fs;
+
+        static const int TRACK_PRECISION_START_VALUE = 1.0;
 
         // ----------member data ---------------------------
 
@@ -137,11 +143,16 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::map<ChannelKey, TH2F*> TOTvsLSChannelHistograms;
         
         std::vector<TH2F*> TOTvsLSSectorHistograms;
+        std::vector<TH2F*> TrackTimeSectorHistograms;
 
-        // profiles
-        std::map<int, TProfile*> TOTvsLSSectorProfiles;
-        
+        // profiles        
         std::map<ChannelKey, TProfile*> TOTvsLSChannelProfiles;
+
+        std::map<int, TProfile*> TOTvsLSSectorProfiles;
+        std::map<int, TProfile*> TrackTimeSectorProfiles;
+
+        // values constant for given event
+        int LS;
 };
 
 //
