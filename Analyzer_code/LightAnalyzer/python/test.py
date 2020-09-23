@@ -24,6 +24,17 @@ options.register("validOOT",
                 VarParsing.multiplicity.singleton,
                 VarParsing.varType.int,
                 "valid OOT slice")
+
+options.register("minBX",
+                0,
+                VarParsing.multiplicity.singleton,
+                VarParsing.varType.int,
+                "minimal bunch crossing value taken into histograms")
+options.register("maxBX",
+                4000,
+                VarParsing.multiplicity.singleton,
+                VarParsing.varType.int,
+                "maximal bunch crossing value taken into histograms")
                 
 options.parseArguments()
 
@@ -80,10 +91,11 @@ process.LightAnalyzer = cms.EDAnalyzer("LightAnalyzer",
     vertexTag = cms.InputTag("offlinePrimaryVerticesWithBS"),
     tagCalibrationFile = cms.string(options.calibFile),
     tagValidOOT = cms.int32(options.validOOT),
+    minBX = cms.int32(options.minBX),
+    maxBX = cms.int32(options.maxBX),
     Ntracks_Lcuts = cms.vint32([-1,1,-1,1]),
     Ntracks_Ucuts = cms.vint32([-1,6,-1,6])
 )
-#process.Tracer = cms.Service("Tracer")
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 

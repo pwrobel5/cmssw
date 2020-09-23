@@ -31,6 +31,8 @@ LightAnalyzer::LightAnalyzer(const edm::ParameterSet& iConfig):
     vertexToken(consumes<edm::View<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertexTag"))),
     diamondDetector(iConfig, tokenRecHit, tokenLocalTrack),
     validOOT(iConfig.getParameter<int>("tagValidOOT")),
+    minBunchCrossing(iConfig.getParameter<int>("minBX")),
+    maxBunchCrossing(iConfig.getParameter<int>("maxBX")),
     sectorDirectories(SECTORS_NUMBER),
     TOTvsLSSectorHistograms(SECTORS_NUMBER),
     TrackTimevsLSSectorHistograms(SECTORS_NUMBER),
@@ -239,8 +241,12 @@ void LightAnalyzer::performTimingAnalysis(const std::vector<bool>& sectorsToAnal
             }
 
             TrackTimevsLSSectorHistograms[sectorNumber]->Fill(lumiSection, trackTime);
-            TrackTimevsBXSectorHistograms[sectorNumber]->Fill(bunchCrossing, trackTime);
             TrackTimevsXAngleSectorHistograms[sectorNumber]->Fill(crossingAngle, trackTime);
+
+            if (bunchCrossing >= minBunchCrossing && bunchCrossing <= maxBunchCrossing)
+            {
+                TrackTimevsBXSectorHistograms[sectorNumber]->Fill(bunchCrossing, trackTime);
+            }
 
             std::pair<int, int> trackTimeKey(sectorNumber, lumiSection);
             if (trackTimeSums.find(trackTimeKey) == trackTimeSums.end()) {
@@ -416,6 +422,8 @@ void LightAnalyzer::makeSectorProfiles()
         TrackTimevsBXSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TrackTimevsBXSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
         TrackTimevsXAngleSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TrackTimevsXAngleSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
         AvVertexZvsAvTrackTimeSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*AvVertexZvsAvTrackTimeSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
+
+        TrackTimevsBXSectorProfiles[sectorNumber]->Fit("1 ++ x");
     }
 }
 

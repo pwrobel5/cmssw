@@ -143,6 +143,8 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         // external
         DiamondDetectorClass diamondDetector;
         int validOOT;
+        int minBunchCrossing;
+        int maxBunchCrossing;
 
         // selection parameters
         std::map<std::pair<int, int>, std::pair<int, int>> NTracksCuts; // (sector, station), (Lcut, Ucut)
