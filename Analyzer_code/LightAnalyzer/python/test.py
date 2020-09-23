@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 from RecoCTPPS.TotemRPLocal.ctppsDiamondLocalReconstruction_cff import *
 from Configuration.AlCa.GlobalTag import GlobalTag
+from CondCore.CondDB.CondDB_cfi import *
 
 options = VarParsing("analysis")
 
@@ -42,6 +43,30 @@ process.load("RecoCTPPS.TotemRPLocal.ctppsDiamondLocalReconstruction_cff")
 
 process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
 
+process.CondDBOptics = CondDB.clone(connect="frontier://FrontierProd/CMS_CONDITIONS")
+process.PoolDBESSourceOptics = cms.ESSource("PoolDBESSource",
+	process.CondDBOptics,
+	DumpStat=cms.untracked.bool(False),
+	toGet=cms.VPSet(cms.PSet(
+		record=cms.string("CTPPSOpticsRcd"),
+		tag=cms.string("PPSOpticalFunctions_offline_v5")
+	    )
+    ),
+)
+process.esPreferDBFileOptics = cms.ESPrefer("PoolDBESSource","PoolDBESSourceOptics")
+
+process.CondDBAlignment = CondDB.clone(connect="frontier://FrontierProd/CMS_CONDITIONS")
+process.PoolDBESSourceAlignment = cms.ESSource("PoolDBESSource",
+   process.CondDBAlignment,
+   toGet = cms.VPSet(cms.PSet(
+        record = cms.string("RPRealAlignmentRecord"),
+        tag = cms.string("CTPPSRPAlignment_real_offline_v4") # always check on https://twiki.cern.ch/twiki/bin/view/CMS/TaggedProtonsRecommendations
+        )
+    )
+)
+
+process.esPreferDBFileAlignment = cms.ESPrefer("PoolDBESSource", "PoolDBESSourceAlignment")
+
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         "/store/data/Run2018D/ZeroBias/AOD/12Nov2019_UL2018_rsb-v1/120000/27E825BA-972B-E04C-86BC-F38C53041087.root",
@@ -52,6 +77,7 @@ process.LightAnalyzer = cms.EDAnalyzer("LightAnalyzer",
     tagLocalTrack = cms.InputTag("ctppsDiamondLocalTracks"),
     tagPixelLocalTrack = cms.InputTag("ctppsPixelLocalTracks"),
     lhcInfoLabel = cms.string(''),
+    vertexTag = cms.InputTag("offlinePrimaryVerticesWithBS"),
     tagCalibrationFile = cms.string(options.calibFile),
     tagValidOOT = cms.int32(options.validOOT),
     Ntracks_Lcuts = cms.vint32([-1,1,-1,1]),

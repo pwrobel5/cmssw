@@ -44,6 +44,7 @@
 #include "DataFormats/CTPPSReco/interface/CTPPSDiamondRecHit.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSDiamondLocalTrack.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSPixelLocalTrack.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 
 #include "CondFormats/RunInfo/interface/LHCInfo.h"
 #include "CondFormats/DataRecord/interface/LHCInfoRcd.h"
@@ -99,6 +100,7 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         void fillPixelMux(const edm::Event& iEvent);
         std::vector<bool> getSectorsToAnalyze();
         void readCrossingAngle(const edm::EventSetup& iSetup);
+        void readVertexZ(const edm::Event& iEvent);
         void fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool>& sectorsToAnalyze);
         void initializeChannelHistograms(const CTPPSDiamondDetId& detId);
         std::string makeChannelDirectoryName(int planeIndex, int channelIndex);
@@ -113,6 +115,8 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::string makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex);
         std::string makeSectorHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex);
 
+        void calculateAverages();
+        void fillHistogramsWithAverages();
         void makeSectorProfiles();
         void makeChannelProfiles();
 
@@ -131,6 +135,7 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         edm::EDGetTokenT< edm::DetSetVector<CTPPSDiamondLocalTrack>> tokenLocalTrack;
         edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelLocalTrack>> tokenPixelLocalTrack;
         std::string lhcInfoLabel;
+        edm::EDGetTokenT<edm::View<reco::Vertex>> vertexToken;
 
         // external
         DiamondDetectorClass diamondDetector;
@@ -152,6 +157,7 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::vector<TH2F*> TrackTimevsLSSectorHistograms;
         std::vector<TH2F*> TrackTimevsBXSectorHistograms;
         std::vector<TH2F*> TrackTimevsXAngleSectorHistograms;
+        std::vector<TH2F*> AvVertexZvsAvTrackTimeSectorHistograms;
 
         // profiles        
         std::map<ChannelKey, TProfile*> TOTvsLSChannelProfiles;
@@ -160,15 +166,23 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::map<int, TProfile*> TrackTimevsLSSectorProfiles;
         std::map<int, TProfile*> TrackTimevsBXSectorProfiles;
         std::map<int, TProfile*> TrackTimevsXAngleSectorProfiles;
+        std::map<int, TProfile*> AvVertexZvsAvTrackTimeSectorProfiles;
 
         // values constant for given event
         int lumiSection;
         int bunchCrossing;
         int crossingAngle;
-};
 
-//
-// static data member definitions
-//
+        // averages utils
+        std::map<std::pair<int, int>, unsigned int> trackTimeCounters; // key: (sector number, lumiSection)
+        std::map<std::pair<int, int>, double> trackTimeSums;        
+		std::map<std::pair<int, int>, double> trackTimeAverages;
+
+        std::map<int, unsigned int> vertexZCounters; // key: lumiSection
+		std::map<int, double> vertexZSums;
+		std::map<int, double> vertexZAverages;		
+
+		std::map<int, int> crossingAngles; // key: lumiSection
+};
 
 #endif

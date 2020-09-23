@@ -18,6 +18,9 @@ const std::string TRACK_TIME_VS_BX_HISTOGRAM_LEGEND_SUFFIX = ";Bunch crossing;Tr
 const std::string TRACK_TIME_VS_XANGLE_HISTOGRAM_NAME = "Track time vs Crossing angle";
 const std::string TRACK_TIME_VS_XANGLE_HISTOGRAM_LEGEND_SUFFIX = ";Crossing angle [murad];Track time [ns]";
 
+const std::string AV_VERTEX_Z_VS_AV_TRACK_TIME_HISTOGRAM_NAME = "Average vertex z vs Average track time";
+const std::string AV_VERTEX_Z_VS_AV_TRACK_TIME_HISTOGRAM_LEGEND_SUFFIX = ";Average track time [ns];Average vertex z [cm]";
+
 const int LS_BINS = 4000;
 const int LS_MIN = 0;
 const int LS_MAX = 4000;
@@ -37,5 +40,9 @@ const int BX_MAX = 4000;
 const int XANGLE_BINS = 60;
 const int XANGLE_MIN = 120;
 const int XANGLE_MAX = 180;
+
+const int VERTEX_Z_BINS = 1000;
+const int VERTEX_Z_MIN = -10;
+const int VERTEX_Z_MAX = 10;
 
 #endif
