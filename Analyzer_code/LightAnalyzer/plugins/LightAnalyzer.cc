@@ -69,7 +69,7 @@ void LightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
         return;
 
     diamondDetector.ExtractData(iEvent);
-    LS = iEvent.luminosityBlock();
+    lumiSection = iEvent.luminosityBlock();
 
     fillTOTvsLS(iEvent, sectorsToAnalyze);
     performTimingAnalysis(sectorsToAnalyze);
@@ -127,8 +127,8 @@ void LightAnalyzer::fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool
                 if (isRecHitValid(recHit, recHitKey) && diamondDetector.PadActive(detId.arm(), detId.plane(), detId.channel())) {
                     double ToT = diamondDetector.GetToT(detId.arm(), detId.plane(), detId.channel());
 
-                    TOTvsLSSectorHistograms[recHitKey.sector]->Fill(LS, ToT);
-                    TOTvsLSChannelHistograms[recHitKey]->Fill(LS, ToT);
+                    TOTvsLSSectorHistograms[recHitKey.sector]->Fill(lumiSection, ToT);
+                    TOTvsLSChannelHistograms[recHitKey]->Fill(lumiSection, ToT);
                 }
             }
         }
@@ -196,7 +196,7 @@ void LightAnalyzer::performTimingAnalysis(const std::vector<bool>& sectorsToAnal
                 }	
             }
 
-            TrackTimeSectorHistograms[sectorNumber]->Fill(LS, trackTime);
+            TrackTimeSectorHistograms[sectorNumber]->Fill(lumiSection, trackTime);
         }
     }
 }

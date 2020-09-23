@@ -152,7 +152,7 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::map<int, TProfile*> TrackTimeSectorProfiles;
 
         // values constant for given event
-        int LS;
+        int lumiSection;
 };
 
 //
