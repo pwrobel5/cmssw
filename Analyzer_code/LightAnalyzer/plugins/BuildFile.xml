@@ -2,5 +2,7 @@
 <use name="FWCore/PluginManager"/>
 <use name="FWCore/ParameterSet"/>
 <use name="DataFormats/CTPPSReco"/>
+<use name="CondFormats/RunInfo"/>
+<use name="CondFormats/DataRecord"/>
 <flags EDM_PLUGIN="1"/>
 <use name="PhysicsTools/UtilAlgos"/>

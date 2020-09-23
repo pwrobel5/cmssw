@@ -31,6 +31,7 @@
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -43,6 +44,9 @@
 #include "DataFormats/CTPPSReco/interface/CTPPSDiamondRecHit.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSDiamondLocalTrack.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSPixelLocalTrack.h"
+
+#include "CondFormats/RunInfo/interface/LHCInfo.h"
+#include "CondFormats/DataRecord/interface/LHCInfoRcd.h"
 
 #include "TH2F.h"
 #include "TProfile.h"
@@ -94,6 +98,7 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
         void fillPixelMux(const edm::Event& iEvent);
         std::vector<bool> getSectorsToAnalyze();
+        void readCrossingAngle(const edm::EventSetup& iSetup);
         void fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool>& sectorsToAnalyze);
         void initializeChannelHistograms(const CTPPSDiamondDetId& detId);
         std::string makeChannelDirectoryName(int planeIndex, int channelIndex);
@@ -125,6 +130,7 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         edm::EDGetTokenT< edm::DetSetVector<CTPPSDiamondRecHit>> tokenRecHit;
         edm::EDGetTokenT< edm::DetSetVector<CTPPSDiamondLocalTrack>> tokenLocalTrack;
         edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelLocalTrack>> tokenPixelLocalTrack;
+        std::string lhcInfoLabel;
 
         // external
         DiamondDetectorClass diamondDetector;
@@ -145,6 +151,7 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::vector<TH2F*> TOTvsLSSectorHistograms;
         std::vector<TH2F*> TrackTimevsLSSectorHistograms;
         std::vector<TH2F*> TrackTimevsBXSectorHistograms;
+        std::vector<TH2F*> TrackTimevsXAngleSectorHistograms;
 
         // profiles        
         std::map<ChannelKey, TProfile*> TOTvsLSChannelProfiles;
@@ -152,10 +159,12 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         std::map<int, TProfile*> TOTvsLSSectorProfiles;
         std::map<int, TProfile*> TrackTimevsLSSectorProfiles;
         std::map<int, TProfile*> TrackTimevsBXSectorProfiles;
+        std::map<int, TProfile*> TrackTimevsXAngleSectorProfiles;
 
         // values constant for given event
         int lumiSection;
         int bunchCrossing;
+        int crossingAngle;
 };
 
 //

@@ -27,12 +27,14 @@ LightAnalyzer::LightAnalyzer(const edm::ParameterSet& iConfig):
     tokenRecHit(consumes<edm::DetSetVector<CTPPSDiamondRecHit>>(iConfig.getParameter<edm::InputTag>("tagRecHit"))),
     tokenLocalTrack(consumes<edm::DetSetVector<CTPPSDiamondLocalTrack>>(iConfig.getParameter<edm::InputTag>("tagLocalTrack"))),
     tokenPixelLocalTrack(consumes< edm::DetSetVector<CTPPSPixelLocalTrack>>(iConfig.getParameter<edm::InputTag>("tagPixelLocalTrack"))),
+    lhcInfoLabel(iConfig.getParameter<std::string>("lhcInfoLabel")),
     diamondDetector(iConfig, tokenRecHit, tokenLocalTrack),
     validOOT(iConfig.getParameter<int>("tagValidOOT")),
     sectorDirectories(SECTORS_NUMBER),
     TOTvsLSSectorHistograms(SECTORS_NUMBER),
     TrackTimevsLSSectorHistograms(SECTORS_NUMBER),
-    TrackTimevsBXSectorHistograms(SECTORS_NUMBER)
+    TrackTimevsBXSectorHistograms(SECTORS_NUMBER),
+    TrackTimevsXAngleSectorHistograms(SECTORS_NUMBER)
 {
     usesResource("TFileService");
     readNTracksCuts(iConfig);
@@ -72,6 +74,7 @@ void LightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     diamondDetector.ExtractData(iEvent);
     lumiSection = iEvent.luminosityBlock();
     bunchCrossing = iEvent.bunchCrossing();
+    readCrossingAngle(iSetup);
 
     fillTOTvsLS(iEvent, sectorsToAnalyze);
     performTimingAnalysis(sectorsToAnalyze);
@@ -110,6 +113,13 @@ std::vector<bool> LightAnalyzer::getSectorsToAnalyze()
 	}
 
     return sectorsToAnalyze;
+}
+
+void LightAnalyzer::readCrossingAngle(const edm::EventSetup& iSetup)
+{
+    edm::ESHandle<LHCInfo> hLHCInfo;
+	iSetup.get<LHCInfoRcd>().get(lhcInfoLabel, hLHCInfo);
+	crossingAngle = hLHCInfo->crossingAngle();
 }
 
 void LightAnalyzer::fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool>& sectorsToAnalyze)
@@ -200,6 +210,7 @@ void LightAnalyzer::performTimingAnalysis(const std::vector<bool>& sectorsToAnal
 
             TrackTimevsLSSectorHistograms[sectorNumber]->Fill(lumiSection, trackTime);
             TrackTimevsBXSectorHistograms[sectorNumber]->Fill(bunchCrossing, trackTime);
+            TrackTimevsXAngleSectorHistograms[sectorNumber]->Fill(crossingAngle, trackTime);
         }
     }
 }
@@ -242,6 +253,12 @@ void LightAnalyzer::beginJob()
             makeSectorHistogramLegend(TRACK_TIME_VS_BX_HISTOGRAM_NAME, TRACK_TIME_VS_BX_HISTOGRAM_LEGEND_SUFFIX, sectorNumber).c_str(),
             BX_BINS, BX_MIN, BX_MAX, TRACK_TIME_BINS, TRACK_TIME_MIN, TRACK_TIME_MAX
         );
+
+        TrackTimevsXAngleSectorHistograms[sectorNumber] = sectorDirectories[sectorNumber].make<TH2F>(
+            makeSectorHistogramTitle(TRACK_TIME_VS_XANGLE_HISTOGRAM_NAME, sectorNumber).c_str(),
+            makeSectorHistogramLegend(TRACK_TIME_VS_XANGLE_HISTOGRAM_NAME, TRACK_TIME_VS_XANGLE_HISTOGRAM_LEGEND_SUFFIX, sectorNumber).c_str(),
+            XANGLE_BINS, XANGLE_MIN, XANGLE_MAX, TRACK_TIME_BINS, TRACK_TIME_MIN, TRACK_TIME_MAX
+        );
     }
 }
 
@@ -268,6 +285,7 @@ void LightAnalyzer::makeSectorProfiles()
         TOTvsLSSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TOTvsLSSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
         TrackTimevsLSSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TrackTimevsLSSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
         TrackTimevsBXSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TrackTimevsBXSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
+        TrackTimevsXAngleSectorProfiles[sectorNumber] = sectorDirectories[sectorNumber].make<TProfile>(*TrackTimevsXAngleSectorHistograms[sectorNumber]->ProfileX("_pfx", 1, -1));
     }
 }
 
