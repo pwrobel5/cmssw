@@ -108,6 +108,8 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 
 if options.useJSONCalibration == "y":
     # TODO - load calibration from JSON file to ctppsDiamondLocalReconstruction
+    process.load("CondFormats.PPSObjects.ppsTimingCalibrationESSource_cfi")
+    process.ppsTimingCalibrationESSource.calibrationFile = cms.FileInPath(options.calibFile)
     process.path = cms.Path(ctppsDiamondLocalReconstruction * process.LightAnalyzer)
 else:
     process.path = cms.Path(process.LightAnalyzer)
