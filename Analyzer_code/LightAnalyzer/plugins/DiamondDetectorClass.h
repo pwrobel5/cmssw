@@ -76,7 +76,6 @@ class DiamondDetectorClass  {
 	  
 	  void ExtractData(const edm::Event&);
 	  
-	  void ExtractCalibrations();
 	  std::map < ChannelKey , Calib_par >  GetDefaultCalibrations();
 	  
 	  inline int GetMux(int sector, int plane) 			{return Mux_map_[std::make_pair(sector,plane)];}
@@ -101,8 +100,6 @@ class DiamondDetectorClass  {
 		
 	  inline double GetPadOOT(int sector, int plane, int channel)
 		{return RecHit_map_[ChannelKey(sector,plane,channel)].at(0).getOOTIndex();}
-		
-	  double GetTime_SPC(int, int , int );	
 		
 	  inline double GetToT(int sector, int plane, int channel)
 		{return RecHit_map_[ChannelKey(sector,plane,channel)].at(0).getToT();}	
@@ -167,7 +164,6 @@ class DiamondDetectorClass  {
 	std::vector<int> saturationV_;
 	
 	TF1 *CalibFunc;
-	std::string Calib_input_path_;
 	int valid_OOT_;
 	
 };

@@ -11,67 +11,12 @@ DiamondDetectorClass::DiamondDetectorClass(const edm::ParameterSet& iConfig, edm
 tokenRecHit_          ( tokenRecHit_input),
 tokenLocalTrack_          ( tokenLocalTrack_input),
 saturationV_ (2),
-Calib_input_path_ (iConfig.getParameter< std::string >( "tagCalibrationFile" )),
 valid_OOT_ (iConfig.getParameter< int >( "tagValidOOT" ))
 {
 	CalibFunc = new TF1("myFermi","[0]/(exp((x-[1])/[2])+1)+[3]",0,30);
 	
 	SPC_map_= this-> GetDefaultCalibrations();
-	this-> ExtractCalibrations();
-
 }
-
-void DiamondDetectorClass::ExtractCalibrations()
-{
-	
-
-	// Create a root
-	pt::ptree root;
-	// Load the json file in this ptree
-	pt::read_json(Calib_input_path_.c_str(), root);
-
-	std::cout << "reading calibration from "<< Calib_input_path_.c_str()<< std::endl;
-	
-	SPC_map_.clear();
-   
-   // pt::write_json(std::cout, root);	
-	for (const auto& sec_iter : root.get_child("Parameters.Sectors") )
-	{
-		pt::ptree sec_node = sec_iter.second;
-		int sec_id = sec_node.get<int>("sector");	
-		for (const auto& st_iter : sec_node.get_child("Stations") ) 
-		{			
-			pt::ptree st_node = st_iter.second;
-			int st_id = st_node.get<int>("station");
-			if (st_id!=1) continue; // station 1
-			for (const auto& pl_iter : st_node.get_child("Planes") )
-			{
-			
-				pt::ptree pl_node = pl_iter.second;
-				int pl_id = pl_node.get<int>("plane");
-				for (const auto& ch_iter : pl_node.get_child("Channels") )
-				{
-					pt::ptree ch_node = ch_iter.second;
-					int ch_id = ch_node.get<int>("channel");
-					std::vector<double> par_vec;
-					for (const auto& params_iter : ch_node.get_child("param") )
-					{
-						par_vec.push_back(params_iter.second.get_value<double>());
-					}
-					Calib_par ch_calibration(ch_node.get<double>("time_offset", 0.0), ch_node.get<double>("time_precision"), par_vec);
-					SPC_map_[ChannelKey(sec_id,pl_id,ch_id)]=ch_calibration;
-					std::cout << "Calib found (sec "<< sec_id << "station "<< st_id <<" pl "<< pl_id << " ch "<< ch_id << " : " << " off "<< ch_node.get<double>("time_offset", 0.0)  
-								<< " pre "<< ch_node.get<double>("time_precision")  << " p0 "<< par_vec[0]<< " p1 " << par_vec[1]
-								<< " p2 "<< par_vec[2]<< " p3 "<< par_vec[3] << std::endl;
-				}
-			}
-		}
-	}
-	
-
-}
-
-
 
 DiamondDetectorClass::~ DiamondDetectorClass()
 {
@@ -185,29 +130,6 @@ void DiamondDetectorClass::ExtractData(const edm::Event& iEvent)
 	//std::cout << RecHit_mapV_[sector_id].size() << std::endl;
 	
 	}   
-}
-
-double DiamondDetectorClass::GetTime_SPC(int sector, int plane, int channel)
-{
-	double Time_raw = RecHit_map_[ChannelKey(sector,plane,channel)].at(0).getT();
-	double ToT = RecHit_map_[ChannelKey(sector,plane,channel)].at(0).getToT();
-	
-	//TF1 *myfermi = new TF1("myFermi","[0]/(exp((x-[1])/[2])+1)+[3]",0,30);
-	
-	double P0 = SPC_map_[ChannelKey(sector,plane,channel)].params[0];
-	double P1 = SPC_map_[ChannelKey(sector,plane,channel)].params[1];
-	double P2 = SPC_map_[ChannelKey(sector,plane,channel)].params[2];
-	double P3 = SPC_map_[ChannelKey(sector,plane,channel)].params[3];
-	
-	CalibFunc -> SetParameters(P0,P1,P2,P3);
-	
-	double Time_SPC = Time_raw - ( CalibFunc-> Eval(ToT) ); 
-	
-	//double Time_SPC = Time_raw - (C0 + C1*ToT + C2*ToT*ToT + C3*ToT*ToT*ToT);
- 
-	return Time_SPC;
-	
-	
 }
 
 int DiamondDetectorClass::GetSpread(int sector, int plane)

@@ -8,7 +8,7 @@ from CondCore.CondDB.CondDB_cfi import *
 options = VarParsing("analysis")
 
 options.register("calibFile",
-                0,
+                "",
                 VarParsing.multiplicity.singleton,
                 VarParsing.varType.string,
                 "Calibration input file")
