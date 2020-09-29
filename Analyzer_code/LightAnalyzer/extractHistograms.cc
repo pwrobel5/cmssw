@@ -1,5 +1,5 @@
 #include "extractHistograms.h"
-#include "Analyzer_code/LightAnalyzer/plugins/HistogramConstants.h"
+#include "plugins/HistogramConstants.h"
 
 void extractHistograms() {
     std::vector<std::string> directories = getCrabDirectoriesList();

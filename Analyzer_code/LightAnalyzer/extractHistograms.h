@@ -75,7 +75,7 @@ struct fitData {
     double slope;
 };
 
-const std::string BASE_DIRECTORY = "../crab_test/test_files/";
+const std::string BASE_DIRECTORY = "../../../crab_test/test_files/";
 
 // TODO - set to 4 and 12
 const int MAX_PLANE_NUMBER = 3;
