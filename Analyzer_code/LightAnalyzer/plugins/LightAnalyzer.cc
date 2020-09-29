@@ -187,28 +187,16 @@ void LightAnalyzer::initializeChannelHistograms(const CTPPSDiamondDetId& detId)
     int channelIndex = detId.channel();
 
     ChannelKey recHitKey(sectorIndex, planeIndex, channelIndex);
-    std::string directoryName = makeChannelDirectoryName(planeIndex, channelIndex);
+    std::string directoryName = makePlaneDirectoryName(planeIndex) + "/" + makeChannelDirectoryName(channelIndex);
+    std::cout << directoryName << std::endl;
 
     channelDirectories[recHitKey] = sectorDirectories[sectorIndex].mkdir(directoryName);
+
     TOTvsLSChannelHistograms[recHitKey] = channelDirectories[recHitKey].make<TH2F>(
-        makeChannelHistogramTitle(TOT_VS_LS_HISTOGRAM_NAME, planeIndex, channelIndex).c_str(),
-        makeChannelHistogramLegend(TOT_VS_LS_HISTOGRAM_NAME, TOT_VS_LS_HISTOGRAM_LEGEND_SUFFIX, planeIndex, channelIndex).c_str(),
-        LS_BINS, LS_MIN, LS_MAX, TOT_BINS, TOT_MIN, TOT_MAX);
-}
-
-std::string LightAnalyzer::makeChannelDirectoryName(int planeIndex, int channelIndex)
-{
-    return "plane " + std::to_string(planeIndex) + "/channel " + std::to_string(channelIndex);
-}
-
-std::string LightAnalyzer::makeChannelHistogramTitle(const std::string& titlePrefix, int planeIndex, int channelIndex)
-{
-    return titlePrefix + " plane " + std::to_string(planeIndex) + " channel " + std::to_string(channelIndex);
-}
-
-std::string LightAnalyzer::makeChannelHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int planeIndex, int channelIndex)
-{
-    return makeChannelHistogramTitle(legendPrefix, planeIndex, channelIndex) + legendSuffix;
+        makeChannelHistogramTitle(TOT_VS_LS_HISTOGRAM_NAME, sectorIndex, planeIndex, channelIndex).c_str(),
+        makeChannelHistogramLegend(TOT_VS_LS_HISTOGRAM_NAME, TOT_VS_LS_HISTOGRAM_LEGEND_SUFFIX, sectorIndex, planeIndex, channelIndex).c_str(),
+        LS_BINS, LS_MIN, LS_MAX, TOT_BINS, TOT_MIN, TOT_MAX
+    );
 }
 
 bool LightAnalyzer::isRecHitValid(const CTPPSDiamondRecHit& recHit, const ChannelKey& recHitKey)
@@ -280,7 +268,7 @@ double LightAnalyzer::getNextTrackPrecisionValue(double trackPrecision)
 // ------------ method called once each job just before starting event loop  ------------
 void LightAnalyzer::beginJob()
 {
-    globalInfoDirectory = fs->mkdir("GlobalInfo");
+    globalInfoDirectory = fs->mkdir(GLOBAL_INFO_PATH);
 
     sectorDirectories[SECTOR_45] = fs->mkdir(SECTOR_45_HISTOGRAM_PATH);
     sectorDirectories[SECTOR_56] = fs->mkdir(SECTOR_56_HISTOGRAM_PATH);
@@ -348,16 +336,6 @@ void LightAnalyzer::initializeSectorHistograms()
             TRACK_TIME_BINS, TRACK_TIME_MIN, TRACK_TIME_MAX, VERTEX_Z_BINS, VERTEX_Z_MIN, VERTEX_Z_MAX
         );
     }
-}
-
-std::string LightAnalyzer::makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex)
-{
-    return titlePrefix + " sector " + std::to_string(sectorIndex);
-}
-
-std::string LightAnalyzer::makeSectorHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex)
-{
-    return makeSectorHistogramTitle(legendPrefix, sectorIndex) + legendSuffix;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

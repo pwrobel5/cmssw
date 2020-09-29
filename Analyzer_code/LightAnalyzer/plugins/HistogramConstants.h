@@ -3,6 +3,11 @@
 
 #include <string>
 
+// TODO - change strings to chars*
+// TODO - make using 45 and 56 in sector number names
+
+const std::string DIRECTORIES_PREFIX = "LightAnalyzer/";
+const char* GLOBAL_INFO_PATH = "GlobalInfo";
 const char* SECTOR_45_HISTOGRAM_PATH = "sector_45";
 const char* SECTOR_56_HISTOGRAM_PATH = "sector_56";
 
@@ -56,5 +61,34 @@ const int XANGLE_MAX = 180;
 const int VERTEX_Z_BINS = 1000;
 const int VERTEX_Z_MIN = -10;
 const int VERTEX_Z_MAX = 10;
+
+std::string makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex)
+{
+    return titlePrefix + " sector " + std::to_string(sectorIndex);
+}
+
+std::string makeSectorHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex)
+{
+    return makeSectorHistogramTitle(legendPrefix, sectorIndex) + legendSuffix;
+}
+
+std::string makeChannelHistogramTitle(const std::string& titlePrefix, int sectorIndex, int planeIndex, int channelIndex)
+{
+    return titlePrefix + " sector " + std::to_string(sectorIndex) + " plane " + std::to_string(planeIndex) + " channel " + std::to_string(channelIndex);
+}
+
+std::string makeChannelHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex, int planeIndex, int channelIndex)
+{
+    return makeChannelHistogramTitle(legendPrefix, sectorIndex, planeIndex, channelIndex) + legendSuffix;
+}
+
+std::string makePlaneDirectoryName(int planeIndex) {
+    return "plane " + std::to_string(planeIndex);
+}
+
+std::string makeChannelDirectoryName(int channelIndex)
+{
+    return "channel " + std::to_string(channelIndex);
+}
 
 #endif

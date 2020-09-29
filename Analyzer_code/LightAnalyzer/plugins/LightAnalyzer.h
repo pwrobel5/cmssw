@@ -104,7 +104,6 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         void readVertexZ(const edm::Event& iEvent);
         void fillTOTvsLS(const edm::Event& iEvent, const std::vector<bool>& sectorsToAnalyze);
         void initializeChannelHistograms(const CTPPSDiamondDetId& detId);
-        std::string makeChannelDirectoryName(int planeIndex, int channelIndex);
         bool isRecHitValid(const CTPPSDiamondRecHit& recHit, const ChannelKey& recHitKey);
         void performTimingAnalysis(const std::vector<bool>& sectorsToAnalyze);
         int getSectorNumberFromLocalTrack(const std::pair<const CTPPSDiamondLocalTrack, std::vector<std::pair<ChannelKey, CTPPSDiamondRecHit>>>& localTrack);
@@ -113,10 +112,6 @@ class LightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
         void initializeGlobalHistograms();
         void initializeSectorHistograms();
-        std::string makeChannelHistogramTitle(const std::string& titlePrefix, int planeIndex, int channelIndex);
-        std::string makeChannelHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int planeIndex, int channelIndex);
-        std::string makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex);
-        std::string makeSectorHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex);
 
         void calculateAverages();
         void fillHistogramsWithAverages();
