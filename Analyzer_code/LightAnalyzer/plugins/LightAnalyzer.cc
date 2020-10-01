@@ -186,7 +186,6 @@ void LightAnalyzer::initializeChannelHistograms(const CTPPSDiamondDetId& detId)
 
     ChannelKey recHitKey(sectorIndex, planeIndex, channelIndex);
     std::string directoryName = makePlaneDirectoryName(planeIndex) + "/" + makeChannelDirectoryName(channelIndex);
-    std::cout << directoryName << std::endl;
 
     channelDirectories[recHitKey] = sectorDirectories[sectorIndex].mkdir(directoryName);
 

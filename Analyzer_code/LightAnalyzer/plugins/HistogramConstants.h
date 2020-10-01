@@ -3,13 +3,10 @@
 
 #include <string>
 
-// TODO - change strings to chars*
-// TODO - make using 45 and 56 in sector number names
-
 const std::string DIRECTORIES_PREFIX = "LightAnalyzer/";
-const char* GLOBAL_INFO_PATH = "GlobalInfo";
-const char* SECTOR_45_HISTOGRAM_PATH = "sector_45";
-const char* SECTOR_56_HISTOGRAM_PATH = "sector_56";
+const std::string GLOBAL_INFO_PATH = "GlobalInfo";
+const std::string SECTOR_45_HISTOGRAM_PATH = "sector_45";
+const std::string SECTOR_56_HISTOGRAM_PATH = "sector_56";
 
 const std::string TRACK_TIME_HISTOGRAM_NAME = "Track time distribution";
 const std::string TRACK_TIME_HISTOGRAM_LEGEND_SUFFIX = ";Track time [ns]";
@@ -62,9 +59,21 @@ const int VERTEX_Z_BINS = 1000;
 const int VERTEX_Z_MIN = -10;
 const int VERTEX_Z_MAX = 10;
 
+std::string sectorIndexToNumber(int sectorIndex)
+{
+    switch (sectorIndex) {
+        case 0:
+            return "45";
+        case 1:
+            return "56";
+        default:
+            return "invalid";
+    }
+}
+
 std::string makeSectorHistogramTitle(const std::string& titlePrefix, int sectorIndex)
 {
-    return titlePrefix + " sector " + std::to_string(sectorIndex);
+    return titlePrefix + " sector " + sectorIndexToNumber(sectorIndex);
 }
 
 std::string makeSectorHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex)
@@ -74,7 +83,7 @@ std::string makeSectorHistogramLegend(const std::string& legendPrefix, const std
 
 std::string makeChannelHistogramTitle(const std::string& titlePrefix, int sectorIndex, int planeIndex, int channelIndex)
 {
-    return titlePrefix + " sector " + std::to_string(sectorIndex) + " plane " + std::to_string(planeIndex) + " channel " + std::to_string(channelIndex);
+    return titlePrefix + " sector " + sectorIndexToNumber(sectorIndex) + " plane " + std::to_string(planeIndex) + " channel " + std::to_string(channelIndex);
 }
 
 std::string makeChannelHistogramLegend(const std::string& legendPrefix, const std::string& legendSuffix, int sectorIndex, int planeIndex, int channelIndex)

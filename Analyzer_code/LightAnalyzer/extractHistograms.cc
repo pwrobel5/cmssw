@@ -59,14 +59,13 @@ sectorData initializeSectorData(int sectorNumber) {
     sectorData result;
 
     initializeSectorHistograms(sectorNumber, result.histograms);
-    for (int i = 0; i <= MAX_PLANE_NUMBER; i++) {
+    for (int i = 0; i < MAX_PLANE_NUMBER; i++) {
         result.planeDataMap[i] = initializePlaneData(sectorNumber, i);
     }
 
     return result;
 }
 
-// TODO - make to not repeat this part of code here and in LightAnalyzer
 void initializeSectorHistograms(int sectorNumber, histograms& histograms) {
     histograms.TOTvsLS = new TH2F(
         makeSectorHistogramTitle(TOT_VS_LS_HISTOGRAM_NAME, sectorNumber).c_str(), 
@@ -98,7 +97,7 @@ void initializeSectorHistograms(int sectorNumber, histograms& histograms) {
 planeData initializePlaneData(int sectorNumber, int planeNumber) {
     planeData result;
 
-    for (int i = 0; i <= MAX_CHANNEL_NUMBER; i++) {
+    for (int i = 0; i < MAX_CHANNEL_NUMBER; i++) {
         result.channelDataMap[i] = initializeChannelData(sectorNumber, planeNumber, i);
     }
 
@@ -184,14 +183,14 @@ void addSectorData(TFile& inputFile, const std::string& sectorPath, sectorData& 
     addDataFromHistogram(inputFile, sectorPath + makeSectorHistogramTitle(TRACK_TIME_VS_XANGLE_HISTOGRAM_NAME, sectorNumber), histograms.TimeRAWvsXAngle);
     addDataFromHistogram(inputFile, sectorPath + makeSectorHistogramTitle(AV_VERTEX_Z_VS_AV_TRACK_TIME_HISTOGRAM_NAME, sectorNumber), histograms.AvVertexZvsAvTimeRAW);
 
-    for (int i = 0; i <= MAX_PLANE_NUMBER; i++) {
+    for (int i = 0; i < MAX_PLANE_NUMBER; i++) {
         //addPlaneData(inputFile, sectorPath + makePlaneDirectoryName(i), sectorData.planeDataMap[i], sectorNumber, i);
     }
 }
 
 void addPlaneData(TFile& inputFile, const std::string& planePath, planeData& planeData, int sectorNumber, int planeNumber) {
     if (inputFile.Get(planePath.c_str()) != nullptr) {
-        for (int i = 0; i <= MAX_CHANNEL_NUMBER; i++) {
+        for (int i = 0; i < MAX_CHANNEL_NUMBER; i++) {
             addChannelData(inputFile, planePath + "/" + makeChannelDirectoryName(i), planeData.channelDataMap[i], sectorNumber, planeNumber, i);
         }
     }
@@ -233,13 +232,13 @@ void createProfilesForSector(sectorData& sectorData) {
 
     sectorData.profiles.TimeRAWvsBXProfile->Fit("1 ++ x");
 
-    for (int i = 0; i <= MAX_PLANE_NUMBER; i++) {
+    for (int i = 0; i < MAX_PLANE_NUMBER; i++) {
         createProfilesForPlane(sectorData.planeDataMap[i]);
     }
 }
 
 void createProfilesForPlane(planeData& planeData) {
-    for (int i = 0; i <= MAX_CHANNEL_NUMBER; i++) {
+    for (int i = 0; i < MAX_CHANNEL_NUMBER; i++) {
         createProfilesForChannel(planeData.channelDataMap[i]);
     }
 }
@@ -279,9 +278,9 @@ int getRunNumberFromDirectory(const std::string& directoryName) {
 void saveFile(const std::string& directoryName, runData& runData) {
     std::string outputFileName = getRunNameFromDirectory(directoryName) + ".root";
     TFile outputFile(outputFileName.c_str(), "RECREATE");
-    TDirectory* sector45Dir = outputFile.mkdir(SECTOR_45_HISTOGRAM_PATH);
-    TDirectory* sector56Dir = outputFile.mkdir(SECTOR_56_HISTOGRAM_PATH);
-    TDirectory* globalDataDir = outputFile.mkdir(GLOBAL_INFO_PATH);
+    TDirectory* sector45Dir = outputFile.mkdir(SECTOR_45_HISTOGRAM_PATH.c_str());
+    TDirectory* sector56Dir = outputFile.mkdir(SECTOR_56_HISTOGRAM_PATH.c_str());
+    TDirectory* globalDataDir = outputFile.mkdir(GLOBAL_INFO_PATH.c_str());
 
     saveSectorHistograms(sector45Dir, runData.sectorDataMap[SECTOR_45]);
     saveSectorHistograms(sector56Dir, runData.sectorDataMap[SECTOR_56]);
@@ -315,7 +314,7 @@ void saveSectorHistograms(TDirectory* directory, sectorData& sectorData) {
     sectorData.profiles.TimeRAWvsXAngle->Write();
     sectorData.profiles.AvVertexZvsAvTimeRAWProfile->Write();
 
-    for (int i = 0; i <= MAX_PLANE_NUMBER; i++) {
+    for (int i = 0; i < MAX_PLANE_NUMBER; i++) {
         std::string directoryName = makePlaneDirectoryName(i);
         TDirectory* planeDirectory = directory->mkdir(directoryName.c_str());
         savePlaneHistograms(planeDirectory, sectorData.planeDataMap[i]);
@@ -325,7 +324,7 @@ void saveSectorHistograms(TDirectory* directory, sectorData& sectorData) {
 void savePlaneHistograms(TDirectory* directory, planeData& planeData) {
     directory->cd();
 
-    for (int i = 0; i <= MAX_CHANNEL_NUMBER; i++) {
+    for (int i = 0; i < MAX_CHANNEL_NUMBER; i++) {
         std::string directoryName = makeChannelDirectoryName(i);
         TDirectory* channelDirectory = directory->mkdir(directoryName.c_str());
         saveChannelHistograms(channelDirectory, planeData.channelDataMap[i]);
@@ -369,7 +368,7 @@ void cleanSectorData(sectorData& sectorData) {
     cleanHistograms(sectorData.histograms);
     cleanProfiles(sectorData.profiles);
 
-    for (int i = 0; i <= MAX_PLANE_NUMBER; i++) {
+    for (int i = 0; i < MAX_PLANE_NUMBER; i++) {
         cleanPlaneData(sectorData.planeDataMap[i]);
     }
 }
@@ -391,7 +390,7 @@ void cleanProfiles(profiles& profiles) {
 }
 
 void cleanPlaneData(planeData& planeData) {
-    for (int i = 0; i <= MAX_CHANNEL_NUMBER; i++) {
+    for (int i = 0; i < MAX_CHANNEL_NUMBER; i++) {
         cleanChannelData(planeData.channelDataMap[i]);
     }
 }
@@ -404,8 +403,8 @@ void cleanChannelData(channelData& channelData) {
 void saveFitData(std::map<int, std::vector<fitData>>& sectorsFitData) {
     TFile fitDataOutputFile("fitData.root", "RECREATE");
 
-    TDirectory* sector45Directory = fitDataOutputFile.mkdir(SECTOR_45_HISTOGRAM_PATH);
-    TDirectory* sector56Directory = fitDataOutputFile.mkdir(SECTOR_56_HISTOGRAM_PATH);
+    TDirectory* sector45Directory = fitDataOutputFile.mkdir(SECTOR_45_HISTOGRAM_PATH.c_str());
+    TDirectory* sector56Directory = fitDataOutputFile.mkdir(SECTOR_56_HISTOGRAM_PATH.c_str());
 
     saveSectorFitData(sector45Directory, sectorsFitData[SECTOR_45], SECTOR_45);
     saveSectorFitData(sector56Directory, sectorsFitData[SECTOR_56], SECTOR_56);

@@ -77,9 +77,8 @@ struct fitData {
 
 const std::string BASE_DIRECTORY = "../../../crab_test/test_files/";
 
-// TODO - set to 4 and 12
-const int MAX_PLANE_NUMBER = 3;
-const int MAX_CHANNEL_NUMBER = 11;
+const int MAX_PLANE_NUMBER = 4;
+const int MAX_CHANNEL_NUMBER = 12;
 
 
 std::vector<std::string> getCrabDirectoriesList();
