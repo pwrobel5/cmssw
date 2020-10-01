@@ -7,8 +7,8 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+
 // user include files
-//#include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
@@ -76,8 +76,6 @@ class DiamondDetectorClass  {
 	  
 	  void ExtractData(const edm::Event&);
 	  
-	  std::map < ChannelKey , Calib_par >  GetDefaultCalibrations();
-	  
 	  inline int GetMux(int sector, int plane) 			{return Mux_map_[std::make_pair(sector,plane)];}
 	  inline int GetMuxValidT(int sector, int plane) 	{return Mux_validT_map_[std::make_pair(sector,plane)];}
 	  inline int GetMuxInTrack(int sector, int plane) 	{return Mux_inTrack_map_[std::make_pair(sector,plane)];}
@@ -92,12 +90,6 @@ class DiamondDetectorClass  {
 	  inline double GetTime(int sector, int plane, int channel)
 		{return RecHit_map_[ChannelKey(sector,plane,channel)].at(0).getT();}
 		
-	  inline double GetPadPrecision(int sector, int plane, int channel)
-		{return SPC_map_[ChannelKey(sector,plane,channel)].precision;}
-		
-	  inline double GetPadWeight(int sector, int plane, int channel)
-		{return (pow(SPC_map_[ChannelKey(sector,plane,channel)].precision,-2));}
-		
 	  inline double GetPadOOT(int sector, int plane, int channel)
 		{return RecHit_map_[ChannelKey(sector,plane,channel)].at(0).getOOTIndex();}
 		
@@ -109,7 +101,6 @@ class DiamondDetectorClass  {
 		
 		
 	  inline std::vector<CTPPSDiamondRecHit>  GetPad(int sector, int plane, int channel) {return RecHit_map_[ChannelKey(sector,plane,channel)];}
-	  inline std::map< ChannelKey, Calib_par> GetSPCMap() {return SPC_map_;}
 		
 	  
 	  int GetSpread(int, int);
@@ -140,8 +131,6 @@ class DiamondDetectorClass  {
     static const int CHANNELS_X_PLANE=12;
     static const int PLANES_X_DETECTOR=4;
     static const int MAX_SECTOR_NUMBER=2;
-	
-	std::map< ChannelKey, Calib_par>    SPC_map_;
 
 	// ---------- objects to retrieve ---------------------------
 	edm::EDGetTokenT< edm::DetSetVector<CTPPSDiamondRecHit> > tokenRecHit_;

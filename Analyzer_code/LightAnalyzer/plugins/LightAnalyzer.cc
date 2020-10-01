@@ -68,8 +68,6 @@ LightAnalyzer::~LightAnalyzer() {}
 // ------------ method called for each event  ------------
 void LightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    using namespace edm;
-
     fillPixelMux(iEvent);
     diamondDetector.ExtractData(iEvent);
     lumiSection = iEvent.luminosityBlock();
@@ -201,7 +199,7 @@ void LightAnalyzer::initializeChannelHistograms(const CTPPSDiamondDetId& detId)
 
 bool LightAnalyzer::isRecHitValid(const CTPPSDiamondRecHit& recHit, const ChannelKey& recHitKey)
 {
-    return ((recHit.getOOTIndex() == (int)((diamondDetector.GetSPCMap())[recHitKey].offset / 25)) || validOOT == -1) && !recHit.getMultipleHits();
+    return (validOOT == -1) && !recHit.getMultipleHits();
 }
 
 void LightAnalyzer::performTimingAnalysis(const std::vector<bool>& sectorsToAnalyze)
