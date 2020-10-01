@@ -14,13 +14,13 @@ options.register("calibFile",
                 "Calibration input file")
 
 options.register("geometryFile",
-                0,
+                "Geometry.VeryForwardGeometry.geometryRPFromDD_2018_cfi",
                 VarParsing.multiplicity.singleton,
                 VarParsing.varType.string,
                 "Geometry input file")
 
 options.register("validOOT",
-                0,
+                -1,
                 VarParsing.multiplicity.singleton,
                 VarParsing.varType.int,
                 "valid OOT slice")

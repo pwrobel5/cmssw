@@ -36,9 +36,9 @@ cmsRun Analyzer_code/LightAnalyzer/python/test.py geometryFile=Geometry.VeryForw
 
 3. Test script parameters:
 
-* geometryFile - name of module with detector geometry
-* validOOT - OOT parameter
 * outputFile - name of the output containing all produced histograms
+* geometryFile - name of module with detector geometry, default Geometry.VeryForwardGeometry.geometryRPFromDD_2018_cfi
+* validOOT - OOT parameter, default -1
 * calibFile - path to calibration JSON file (used if needed), default to blank string
 * minBX - minimal value of bunch crossing saved in histograms, default 0
 * maxBX - maximal value of bunch crossing saved in histograms, default 4000
