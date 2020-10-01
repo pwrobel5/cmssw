@@ -31,12 +31,12 @@ scram b
 
 2. Running test example
 ```
-cmsRun Analyzer_code/LightAnalyzer/python/test.py geometryFile=Geometry.VeryForwardGeometry.geometryRPFromDD_2018_cfi validOOT=-1 outputFile=test.root
+cmsRun Analyzer_code/LightAnalyzer/python/test.py outputFile=test.root
 ```
 
 3. Test script parameters:
 
-* outputFile - name of the output containing all produced histograms
+* outputFile - name of the output containing all produced histograms (obligatory to be set)
 * geometryFile - name of module with detector geometry, default Geometry.VeryForwardGeometry.geometryRPFromDD_2018_cfi
 * validOOT - OOT parameter, default -1
 * calibFile - path to calibration JSON file (used if needed), default to blank string

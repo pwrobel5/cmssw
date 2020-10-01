@@ -48,7 +48,7 @@ options.parseArguments()
 
 process = cms.Process("LightAnalyzer")
 
-process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.verbosity = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -113,4 +113,5 @@ if options.useJSONCalibration == "y":
     process.path = cms.Path(ctppsDiamondLocalReconstruction * process.LightAnalyzer)
 else:
     process.path = cms.Path(process.LightAnalyzer)
+
 process.schedule = cms.Schedule(process.path)
